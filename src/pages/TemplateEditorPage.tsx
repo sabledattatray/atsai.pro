@@ -49,8 +49,53 @@ export default function TemplateEditorPage() {
     document.addEventListener('mouseup', stopDrag);
   }, [sidebarWidth]);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    const element = pdfRef.current;
+    if (!element) return;
+    
+    try {
+      setIsGeneratingPdf(true);
+      // Wait for any re-renders
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      // Force explicit dimensions for domtoimage to prevent flexbox squeezing
+      const scale = 2; // high resolution
+      const isA4 = pageSize === 'a4';
+      
+      const targetWidth = element.offsetWidth;
+      const targetHeight = element.offsetHeight;
+      
+      const dataUrl = await domtoimage.toJpeg(element, {
+        quality: 1.0,
+        height: targetHeight * scale,
+        width: targetWidth * scale,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: targetWidth + 'px',
+          height: targetHeight + 'px',
+          margin: '0',
+          padding: '0'
+        }
+      });
+
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: isA4 ? 'a4' : 'letter'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (targetHeight * pdfWidth) / targetWidth;
+      
+      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${resumeData.name?.replace(/\s+/g, '_') || 'Resume'}.pdf`);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+      alert('Could not generate PDF.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string, idx?: number, subfield?: string) => {
@@ -126,9 +171,9 @@ export default function TemplateEditorPage() {
           <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={handleImport}>
              <FileUp className="w-4 h-4 mr-2" /> Import Existing Resume
           </Button>
-          <Button onClick={handlePrint} className="bg-green-600 hover:bg-green-700 text-white font-medium shadow-md transition-colors">
-            <Download className="w-4 h-4 mr-2" />
-            Print / Save PDF
+          <Button onClick={handlePrint} disabled={isGeneratingPdf} className="bg-green-600 hover:bg-green-700 text-white font-medium shadow-md transition-colors">
+            {isGeneratingPdf ? <CheckCircle2 className="w-4 h-4 mr-2 animate-pulse" /> : <Download className="w-4 h-4 mr-2" />}
+            {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
           </Button>
         </div>
       </div>
@@ -530,7 +575,7 @@ export function TechTemplate({ data, color, spacingClass, paddingClass }: any) {
     <div className={`${paddingClass} bg-white text-gray-900 border-t-8 h-full flex flex-col`} style={{ borderColor: primaryColor }}>
       <div className="border-b pb-6 mb-6 text-center" style={{ borderBottomColor: `${primaryColor}40` }}>
         {data.photo && <img src={data.photo} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4" style={{ borderColor: primaryColor }} />}
-        <h1 className="text-4xl font-extrabold tracking-tight mb-2 uppercase" style={{ color: primaryColor }}>{data.name}</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight mb-2 uppercase whitespace-nowrap" style={{ color: primaryColor }}>{data.name}</h1>
         <p className="text-lg font-medium mb-3 text-gray-600">{data.title}</p>
         <div className="flex justify-center gap-4 text-gray-500 font-medium text-[0.85em]">
            <span>{data.email}</span>
@@ -589,7 +634,7 @@ export function ExecutiveTemplate({ data, color, spacingClass, paddingClass }: a
       <div className="text-center mb-8 pb-6 relative">
         {data.photo && <img src={data.photo} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover grayscale border-2 border-slate-200" />}
         <div className="absolute bottom-0 left-1/4 right-1/4 h-px" style={{ backgroundColor: primaryColor }}></div>
-        <h1 className="text-3xl font-black mb-2 tracking-wide uppercase">{data.name}</h1>
+        <h1 className="text-3xl font-black mb-2 tracking-wide uppercase whitespace-nowrap">{data.name}</h1>
         <p className="text-lg mb-4 text-slate-600 italic">{data.title}</p>
         <div className="flex justify-center gap-4 text-[0.8em] tracking-widest font-bold uppercase" style={{ color: primaryColor }}>
            <span>{data.email}</span>
@@ -734,7 +779,7 @@ export function CreativeTemplate({ data, color, spacingClass, paddingClass }: an
          <div className="relative z-10 flex items-center gap-8">
             {data.photo && <img src={data.photo} alt="Profile" className="w-28 h-28 rounded-2xl object-cover shadow-2xl border-4 border-white/20 transform -rotate-3" />}
             <div>
-              <h1 className="text-5xl font-black tracking-tighter mb-2">{data.name}</h1>
+              <h1 className="text-5xl font-black tracking-tighter mb-2 whitespace-nowrap">{data.name}</h1>
               <p className="text-2xl font-medium opacity-90 tracking-wide">{data.title}</p>
             </div>
          </div>
@@ -820,7 +865,7 @@ export function MinimalistTemplate({ data, color, spacingClass, paddingClass }: 
       <div className="text-left mb-10 flex gap-8 items-start border-b border-zinc-100 pb-10">
         {data.photo && <img src={data.photo} alt="Profile" className="w-32 h-32 rounded-full object-cover grayscale opacity-90 shadow-sm" />}
         <div>
-          <h1 className="text-5xl font-light tracking-tighter mb-2">{data.name}</h1>
+          <h1 className="text-5xl font-light tracking-tighter mb-2 whitespace-nowrap">{data.name}</h1>
           <p className="text-2xl text-zinc-500 tracking-wide mb-4 font-light">{data.title}</p>
           <div className="flex gap-6 text-sm text-zinc-500 font-mono tracking-tight">
              <span>{data.email}</span>
@@ -884,7 +929,7 @@ export function BoldTemplate({ data, color, spacingClass, paddingClass }: any) {
       <div className={`pt-16 pb-12 ${paddingClass} relative bg-gray-900 text-white`}>
          <div className="flex justify-between items-center z-10 relative border-l-8 pl-6" style={{ borderColor: primaryColor }}>
             <div className="max-w-2xl">
-               <h1 className="text-5xl font-black tracking-tight mb-3 uppercase leading-tight">{data.name}</h1>
+               <h1 className="text-5xl font-black tracking-tight mb-3 uppercase leading-tight whitespace-nowrap">{data.name}</h1>
                <p className="text-2xl font-bold tracking-widest uppercase mb-6 opacity-80" style={{ color: primaryColor }}>{data.title}</p>
                <div className="flex flex-wrap gap-4 text-sm font-medium opacity-70">
                   <span className="bg-white/10 px-3 py-1.5 rounded uppercase tracking-wider">{data.email}</span>
@@ -965,7 +1010,7 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass }: an
     <div className={`${paddingClass} text-stone-900 bg-[#fefdfb] h-full flex flex-col font-serif`} style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
       <div className="text-center mb-10 pb-8 border-b-2 border-stone-800 relative">
         {data.photo && <img src={data.photo} alt="Profile" className="w-20 h-20 shadow-md mx-auto mb-5 object-cover" />}
-        <h1 className="text-4xl font-bold mb-3 uppercase tracking-widest">{data.name}</h1>
+        <h1 className="text-4xl font-bold mb-3 uppercase tracking-widest whitespace-nowrap">{data.name}</h1>
         <p className="text-lg italic text-stone-700 mb-4">{data.title}</p>
         <div className="flex justify-center gap-6 text-[0.85em] font-bold">
            <span>{data.email}</span>
@@ -1126,7 +1171,7 @@ export function InfographicTemplate({ data, color, spacingClass, paddingClass }:
            </div>
         )}
         <div className="flex-1">
-          <h1 className="text-5xl font-black tracking-tight mb-2 uppercase text-slate-900">{data.name}</h1>
+          <h1 className="text-5xl font-black tracking-tight mb-2 uppercase text-slate-900 whitespace-nowrap">{data.name}</h1>
           <p className="text-2xl font-bold mb-4" style={{ color: primaryColor }}>{data.title}</p>
           <div className="flex gap-4">
              <span className="bg-slate-100 text-slate-600 font-bold px-4 py-1.5 rounded-full text-sm">{data.email}</span>
@@ -1214,7 +1259,7 @@ export function BusinessTemplate({ data, color, spacingClass, paddingClass }: an
          <div className="flex items-center gap-6">
              {data.photo && <img src={data.photo} alt="Profile" className="w-20 h-20 rounded-full object-cover shadow-md" />}
              <div>
-                 <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-2 uppercase">{data.name}</h1>
+                 <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-2 uppercase whitespace-nowrap">{data.name}</h1>
                  <p className="text-xl font-bold tracking-wide" style={{ color: primaryColor }}>{data.title}</p>
              </div>
          </div>

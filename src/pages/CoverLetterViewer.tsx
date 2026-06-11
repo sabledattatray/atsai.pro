@@ -67,8 +67,50 @@ export default function CoverLetterViewer() {
   const pdfRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    const element = pdfRef.current;
+    if (!element) return;
+    
+    try {
+      setIsGeneratingPdf(true);
+      await new Promise(resolve => setTimeout(resolve, 100)); // allow React to render the spinner
+      
+      const scale = 2; // High resolution
+      
+      const targetWidth = element.offsetWidth;
+      const targetHeight = element.offsetHeight;
+      
+      const dataUrl = await domtoimage.toJpeg(element, {
+        quality: 1.0,
+        height: targetHeight * scale,
+        width: targetWidth * scale,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: targetWidth + 'px',
+          height: targetHeight + 'px',
+          margin: '0',
+          padding: '0'
+        }
+      });
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (targetHeight * pdfWidth) / targetWidth;
+      
+      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${templateName?.replace(/\s+/g, '_') || 'Cover_Letter'}.pdf`);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+      alert('Could not generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,9 +164,9 @@ export default function CoverLetterViewer() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={handlePrint} className="gap-2">
-              <Download className="w-4 h-4" />
-              Print / Save PDF
+            <Button variant="outline" onClick={handlePrint} className="gap-2" disabled={isGeneratingPdf}>
+              {isGeneratingPdf ? <CheckCircle2 className="w-4 h-4 animate-pulse" /> : <Download className="w-4 h-4" />}
+              {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
             </Button>
             <Button onClick={handleCopy} className="gap-2 bg-black hover:bg-gray-800">
               {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -220,7 +262,7 @@ export default function CoverLetterViewer() {
 
         {/* Paper View - Fully Editable */}
         <div className="w-full lg:flex-1">
-          <div ref={pdfRef} className="bg-white rounded-xl overflow-hidden transition-colors duration-300 print:shadow-none print:border-none print:m-0 print:p-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-200">
+          <div id="cover-letter-content" ref={pdfRef} className="bg-white rounded-xl overflow-hidden transition-colors duration-300 print:shadow-none print:border-none print:m-0 print:p-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-200">
             
             {/* Header portion with colored background option */}
             <div className={`p-8 sm:p-14 border-b ${themeClasses.border} flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between ${themeClasses.bg} ${themeClasses.text}`}>
