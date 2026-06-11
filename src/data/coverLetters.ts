@@ -881,3 +881,44 @@ export const coverLetterTemplates = [
   "Entry Level Actuary Cover Letter",
   "Actuary Internship Cover Letter"
 ];
+
+export const slugify = (text: string) => {
+  return text.toString().toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+};
+
+const categoriesDef = [
+  { name: 'Technology & IT', keywords: ['IT ', 'IT,', 'Developer', 'Engineer', 'Software', 'Tech', 'Programmer', 'Network', 'Database', 'Scrum', 'Data', 'Cyber', 'System', '.Net', 'PhP', 'Python', 'Java', 'SQL', 'SAP', 'Web'] },
+  { name: 'Healthcare & Medical', keywords: ['Nurse', 'Medical', 'Dental', 'Care', 'Therapist', 'Healthcare', 'Doctor', 'Pharmacy', 'EMT', 'Esthetician', 'Massage', 'Hospital', 'Clinical', 'Phlebotomist', 'Surgical', 'Pediatric', 'Physician', 'Health', 'Optometry', 'Psychologist', 'Psychiatrist', 'Aide'] },
+  { name: 'Finance & Accounting', keywords: ['Finance', 'Accounting', 'Bank', 'Teller', 'Tax', 'Auditor', 'Actuary', 'Payable', 'Receivable', 'Underwriter', 'Bookkeeper', 'Financial', 'Budget', 'Payroll', 'Accountant', 'Broker'] },
+  { name: 'Education & Childcare', keywords: ['Teacher', 'Tutor', 'Student', 'Academic', 'College', 'School', 'Librarian', 'Professor', 'Nanny', 'Child', 'Preschool', 'Day Care', 'Babysitter', 'Coach', 'Instructional', 'Educator', 'Principal'] },
+  { name: 'Sales & Marketing', keywords: ['Sales', 'Marketing', 'Brand', 'Advertising', 'SEO', 'Digital', 'Account Executive', 'Buyer', 'CRM', 'PPC', 'Telemarketing', 'Retail', 'Cashier', 'Customer Service', 'Store'] },
+  { name: 'Creative & Design', keywords: ['Design', 'Writer', 'Video', 'Art', 'Film', 'Media', 'Photographer', 'Animator', 'Actor', 'Creative', 'Cinematographer', 'Music', 'Fashion', 'Stylist', 'Copywriter', 'Journalist'] },
+  { name: 'Hospitality & Food', keywords: ['Barista', 'Chef', 'Cook', 'Wait', 'Server', 'Restaurant', 'Hospitality', 'Hotel', 'Bartender', 'Catering', 'Food', 'Banquet', 'Dishwasher', 'Hostess', 'Dietary'] },
+  { name: 'Engineering & Construction', keywords: ['Construction', 'Welder', 'Maintenance', 'Electrician', 'Carpenter', 'Mechanical', 'Civil', 'Electrical', 'Machinist', 'Architect', 'HVAC', 'Plumber', 'Aviation', 'Aerospace'] },
+  { name: 'Logistics & Operations', keywords: ['Warehouse', 'Driver', 'Delivery', 'Logistics', 'Supply Chain', 'Transport', 'Inventory', 'Dispatcher', 'Operations', 'Forklift', 'Fleet'] },
+  { name: 'Legal & Administration', keywords: ['Lawyer', 'Attorney', 'Legal', 'Paralegal', 'Admin', 'Office', 'Secretary', 'Assistant', 'Receptionist', 'Clerk', 'Executive', 'Manager', 'Director', 'Officer', 'Coordinator', 'Support'] },
+  { name: 'Miscellaneous', keywords: [] }
+];
+
+export const categorizedCoverLetters = categoriesDef.map(cat => ({
+  category: cat.name,
+  items: [] as string[]
+}));
+
+let remaining = [...coverLetterTemplates];
+
+categoriesDef.forEach((cat, index) => {
+  if (cat.name === 'Miscellaneous') return;
+  const matched = remaining.filter(role => 
+    cat.keywords.some(kw => role.toLowerCase().includes(kw.toLowerCase()))
+  );
+  categorizedCoverLetters[index].items = matched;
+  remaining = remaining.filter(role => !matched.includes(role));
+});
+
+categorizedCoverLetters[categorizedCoverLetters.length - 1].items = remaining;

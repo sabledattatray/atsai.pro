@@ -10,6 +10,7 @@ import FeaturesPage from './pages/FeaturesPage';
 import TemplatesPage from './pages/TemplatesPage';
 import TemplateEditorPage from './pages/TemplateEditorPage';
 import SignInPage from './pages/SignInPage';
+import CoverLetterViewer from './pages/CoverLetterViewer';
 
 import CoverLetterBuilderPage from './pages/CoverLetterBuilderPage';
 import LinkedInOptimizerPage from './pages/LinkedInOptimizerPage';
@@ -28,6 +29,7 @@ export default function App() {
            <Route path="pricing" element={<PricingPage />} />
            <Route path="features" element={<FeaturesPage />} />
            <Route path="templates" element={<TemplatesPage />} />
+           <Route path="cover-letters/:slug" element={<CoverLetterViewer />} />
            <Route path="app" element={<AnalysisDashboard />} />
            <Route path="seo/:slug" element={<SeoLandingPage />} />
            <Route path="app/analyze" element={<AnalysisDashboard />} />

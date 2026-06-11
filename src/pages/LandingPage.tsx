@@ -2,15 +2,19 @@ import React, { useState } from 'react';
 import { ChevronRight, CheckCircle2, Zap, FileSearch, Target, TrendingUp, TrendingDown, Briefcase, Sparkles, BarChart2, AlertTriangle, Search, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import { coverLetterTemplates } from '../data/coverLetters';
+import { motion, AnimatePresence } from 'framer-motion';
+import { coverLetterTemplates, categorizedCoverLetters, slugify } from '../data/coverLetters';
 
 export default function LandingPage() {
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeCategory, setActiveCategory] = useState<string>(categorizedCoverLetters[0].category);
   
-  const filteredTemplates = coverLetterTemplates.filter(template => 
-    template.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  // If search is active, we search globally across all and ignore category tabs visually
+  const isSearching = searchTerm.trim().length > 0;
+  
+  const filteredTemplates = isSearching 
+    ? coverLetterTemplates.filter(template => template.toLowerCase().includes(searchTerm.toLowerCase()))
+    : categorizedCoverLetters.find(c => c.category === activeCategory)?.items || [];
 
   return (
     <div className="flex flex-col w-full overflow-hidden">
@@ -342,11 +346,11 @@ export default function LandingPage() {
       </section>
       
       {/* Cover Letters Section */}
-      <section className="py-24 bg-[#FAFAFA] border-b border-gray-100">
+      <section className="py-24 bg-[#FAFAFA] border-b border-gray-100" id="cover-letters">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="text-center mb-12">
             <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight text-black mb-6">Cover Letters for Every Role</h2>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8">Browse hundreds of specialized cover letter templates crafted for your specific industry.</p>
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8">Browse hundreds of specialized cover letter templates crafted for your specific industry. Includes Professional, Creative, and Modern variations.</p>
             
             <div className="max-w-xl mx-auto relative">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -360,19 +364,49 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm relative">
-            {filteredTemplates.length > 0 ? (
-              filteredTemplates.map((template, idx) => (
-                <Link key={idx} to="/app" className="p-3 text-[13px] text-gray-700 hover:text-[#1A66FF] hover:bg-blue-50/50 rounded-lg border border-transparent hover:border-blue-100 transition-colors flex items-center gap-3 font-medium group text-left">
-                  <FileText className="w-4 h-4 text-gray-400 group-hover:text-[#1A66FF] shrink-0" />
-                  <span className="truncate" title={template}>{template}</span>
-                </Link>
-              ))
-            ) : (
-              <div className="col-span-full py-16 text-center text-gray-500 font-medium">
-                No cover letters found matching "{searchTerm}".
-              </div>
-            )}
+          {!isSearching && (
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-8">
+              {categorizedCoverLetters.map((cat, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setActiveCategory(cat.category)}
+                  className={`px-4 py-2 rounded-full text-[13px] font-bold transition-all ${
+                    activeCategory === cat.category 
+                      ? 'bg-[#1A66FF] text-white shadow-md' 
+                      : 'bg-white text-gray-600 border border-gray-200 hover:bg-gray-50'
+                  }`}
+                >
+                  {cat.category} <span className="opacity-70 font-medium ml-1">({cat.items.length})</span>
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm relative overflow-hidden">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+              <AnimatePresence mode="popLayout">
+                {filteredTemplates.length > 0 ? (
+                  filteredTemplates.map((template, idx) => (
+                    <motion.div
+                      key={template}
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Link to={`/cover-letters/${slugify(template)}`} className="p-3 text-[13px] text-gray-700 hover:text-[#1A66FF] hover:bg-blue-50/50 rounded-lg border border-transparent hover:border-blue-100 transition-colors flex items-center gap-3 font-medium group text-left block w-full h-full">
+                        <FileText className="w-4 h-4 text-gray-400 group-hover:text-[#1A66FF] shrink-0" />
+                        <span className="truncate" title={template}>{template}</span>
+                      </Link>
+                    </motion.div>
+                  ))
+                ) : (
+                  <div className="col-span-full py-16 text-center text-gray-500 font-medium w-full">
+                    No cover letters found matching "{searchTerm}".
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
         </div>
       </section>
