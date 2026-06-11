@@ -1,5 +1,5 @@
 {
-  "name": "ResumeCopilot",
+  "name": "Resume Copilot",
   "description": "AI-powered ATS Resume Optimization Platform to match resumes against job descriptions, rate compatibility, and provide rewrite suggestions.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]

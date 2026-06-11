@@ -52,7 +52,7 @@ export default function SharedReportPage() {
          <h1 className="text-4xl sm:text-5xl font-black mb-6 tracking-tight text-slate-900 leading-tight">
             {report.fileName ? `${report.fileName} scored ${report.atsScore}%` : `Resume scored ${report.atsScore}%`}
          </h1>
-         <p className="text-gray-500 font-medium text-lg mb-12">Scored by ATS Optimize Pro Simulation Engine</p>
+         <p className="text-gray-500 font-medium text-lg mb-12">Scored by Resume Copilot Simulation Engine</p>
          
          <div className="bg-white p-10 rounded-3xl shadow-2xl border border-gray-100 flex flex-col md:flex-row items-center gap-12 text-left relative overflow-hidden">
             <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl"></div>

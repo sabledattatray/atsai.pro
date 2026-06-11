@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet, Link, useLocation } from 'react-router-dom';
 import { Briefcase, FileText, User, LayoutDashboard, Menu, X } from 'lucide-react';
 import { Button } from './ui/button';
+import { Logo } from './Logo';
 
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -14,11 +15,8 @@ export default function Layout() {
     <div className="min-h-screen flex flex-col bg-[#F8F9FA] font-sans text-[#1A1A1A]">
       <header className="h-20 w-full px-4 md:px-12 flex items-center justify-between border-b border-gray-200 bg-white sticky top-0 z-50">
         <div className="container mx-auto h-full flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-black z-50">
-            <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center">
-              <div className="w-4 h-4 bg-white rotate-45" />
-            </div>
-            <span className="font-extrabold text-xl tracking-tight uppercase">ResumeCopilot</span>
+          <Link to="/" className="flex items-center text-black z-50">
+            <Logo />
           </Link>
           
           <nav className="hidden lg:flex items-center gap-10 text-sm font-semibold text-gray-600 uppercase tracking-widest">
@@ -105,12 +103,9 @@ export default function Layout() {
         <footer className="bg-gray-50 border-t border-gray-200 py-12 px-4 md:px-12 text-[10px] font-bold uppercase tracking-widest text-gray-400">
           <div className="container mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <div className="flex items-center gap-2 text-black mb-4">
-                <div className="w-8 h-8 bg-black rounded-sm flex items-center justify-center">
-                  <div className="w-4 h-4 bg-white rotate-45" />
-                </div>
-                <span className="font-bold text-sm tracking-tight uppercase">ResumeCopilot</span>
-              </div>
+              <Link to="/" className="inline-block mb-4">
+                <Logo />
+              </Link>
               <p className="text-[10px] leading-relaxed max-w-[200px]">The world's fastest AI-powered ATS resume optimization platform.</p>
             </div>
             <div>
@@ -154,7 +149,7 @@ export default function Layout() {
               </div>
               <div className="flex gap-8">
                  <span>Privacy Protocol</span>
-                 <span>&copy; {new Date().getFullYear()} ResumeCopilot</span>
+                 <span>&copy; {new Date().getFullYear()} Resume Copilot</span>
               </div>
             </div>
           </div>

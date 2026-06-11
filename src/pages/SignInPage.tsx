@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
+import { Logo } from '@/components/Logo';
 
 export default function SignInPage() {
   const navigate = useNavigate();
@@ -16,11 +17,8 @@ export default function SignInPage() {
       <div className="hidden md:flex w-1/2 bg-black flex-col justify-between p-12 text-white relative overflow-hidden">
         <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_bottom_left,_var(--tw-gradient-stops))] from-indigo-900/40 via-black to-black pointer-events-none"></div>
         <div className="relative z-10">
-          <Link to="/" className="flex items-center gap-2 text-white hover:opacity-80 transition-opacity">
-            <div className="w-8 h-8 bg-white rounded-sm flex items-center justify-center">
-              <div className="w-4 h-4 bg-black rotate-45" />
-            </div>
-            <span className="font-bold text-xl tracking-tight uppercase">ResumeCopilot</span>
+          <Link to="/" className="flex items-center text-white hover:opacity-80 transition-opacity">
+            <Logo invertText />
           </Link>
         </div>
         <div className="relative z-10 max-w-md">

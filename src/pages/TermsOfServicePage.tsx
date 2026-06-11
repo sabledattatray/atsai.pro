@@ -12,7 +12,7 @@ export default function TermsOfServicePage() {
         <div className="prose max-w-none text-gray-600 space-y-8">
            <section>
               <h2 className="text-2xl font-bold text-black mb-4">1. Acceptance of Terms</h2>
-              <p>By accessing or using ResumeCopilot, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.</p>
+              <p>By accessing or using Resume Copilot, you agree to be bound by these Terms of Service. If you disagree with any part of the terms, you may not access the service.</p>
            </section>
            
            <section>
@@ -22,7 +22,7 @@ export default function TermsOfServicePage() {
 
            <section>
               <h2 className="text-2xl font-bold text-black mb-4">3. User Responsibilities</h2>
-              <p>You are responsible for the truthfulness and accuracy of the information in your resume. ResumeCopilot is not liable for falsified credentials or misrepresentations made by users utilizing our rewriting tools.</p>
+              <p>You are responsible for the truthfulness and accuracy of the information in your resume. Resume Copilot is not liable for falsified credentials or misrepresentations made by users utilizing our rewriting tools.</p>
            </section>
 
            <section>

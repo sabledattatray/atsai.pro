@@ -3,6 +3,8 @@ import { useParams, Link } from 'react-router-dom';
 import { FileText, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+import { Logo } from '@/components/Logo';
+
 export default function SeoLandingPage() {
   const { slug } = useParams();
   
@@ -11,12 +13,9 @@ export default function SeoLandingPage() {
   return (
     <div className="min-h-screen bg-white">
       <header className="py-6 px-4 border-b border-gray-100 flex justify-between items-center max-w-7xl mx-auto">
-        <div className="flex items-center gap-2 font-bold text-lg tracking-tight text-black">
-            <div className="w-8 h-8 bg-black rounded flex items-center justify-center">
-                <FileText className="w-4 h-4 text-white" />
-            </div>
-            ATS Optimize Pro
-        </div>
+        <Link to="/" className="flex items-center text-slate-800 hover:opacity-80 transition-opacity">
+            <Logo />
+        </Link>
         <Link to="/app">
            <Button>Get Started Free</Button>
         </Link>
@@ -96,7 +95,7 @@ export default function SeoLandingPage() {
       </main>
 
       <footer className="py-10 border-t border-gray-100 text-center text-sm font-medium text-gray-500">
-         <p>© {new Date().getFullYear()} ATS Optimize Pro SaaS. All rights reserved.</p>
+         <p>© {new Date().getFullYear()} Resume Copilot. All rights reserved.</p>
          <div className="mt-4 space-x-4">
              <Link to="/seo/ats-resume-checker-india" className="hover:text-black">ATS Checker India</Link>
              <Link to="/seo/ats-resume-checker-data-analyst" className="hover:text-black">Data Analyst</Link>

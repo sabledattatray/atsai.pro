@@ -1,9 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, FileText, CheckCircle2, AlertCircle, ArrowRight, Loader2, Download, History, ChevronRight, Eye, Search, Maximize2, Server, Terminal, Command, Zap, Plus, X, Lock, Share2, Users } from 'lucide-react';
+import { UploadCloud, FileText, CheckCircle2, AlertCircle, ArrowRight, Loader2, Download, History, ChevronRight, Eye, Search, Maximize2, Server, Terminal, Command, Zap, Plus, X, Lock, Share2, Users, LayoutDashboard, Target, TrendingUp, TrendingDown, Sparkles, BarChart2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
+
+declare global {
+  interface Window {
+    Razorpay: any;
+  }
+}
 
 type AnalysisState = 'IDLE' | 'UPLOADING' | 'PARSING' | 'ANALYZING' | 'COMPLETE';
 
@@ -44,11 +50,23 @@ export default function AnalysisDashboard() {
   useEffect(() => {
     const savedHistory = localStorage.getItem('atsHistory');
     if (savedHistory) {
-      try { setHistory(JSON.parse(savedHistory)); } catch (e) {}
+      try { 
+        const parsed = JSON.parse(savedHistory);
+        if (Array.isArray(parsed)) {
+          setHistory(parsed);
+        } else {
+          setHistory([]);
+        }
+      } catch (e) {
+        setHistory([]);
+      }
     }
     const savedCredits = localStorage.getItem('atsCredits');
     if (savedCredits !== null) {
-      setCredits(parseInt(savedCredits, 10));
+      const parsedCredits = parseInt(savedCredits, 10);
+      if (!isNaN(parsedCredits)) {
+        setCredits(parsedCredits);
+      }
     }
 
     // Handle Stripe redirect parameters
@@ -100,12 +118,6 @@ export default function AnalysisDashboard() {
     return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   }
 
-declare global {
-  interface Window {
-    Razorpay: any;
-  }
-}
-
   const handleCheckout = async (plan: 'basic' | 'pro') => {
     try {
       const response = await fetch('/api/checkout', {
@@ -125,7 +137,7 @@ declare global {
             key: data.keyId,
             amount: data.amount,
             currency: data.currency,
-            name: "ATS Optimize Pro",
+            name: "Resume Copilot",
             description: plan === 'pro' ? "Unlimited Scans" : "10 Premium Scans",
             order_id: data.orderId,
             handler: async function (response: any) {

@@ -31,11 +31,14 @@ export default function LandingPage() {
               Upload your resume and the job description. Our semantic AI engine analyzes keywords, detects missing skills, and rewrites your achievements for maximum ATS compatibility.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-              <Link to="/app" className="w-full sm:w-auto">
+              <div 
+                className="w-full sm:w-auto"
+                onClick={() => { window.location.href = '/app'; }}
+              >
                 <Button size="lg" className="w-full sm:w-auto text-sm px-10 h-14 bg-black hover:bg-gray-800 text-white font-bold tracking-wider uppercase transition-all shadow-xl hover:shadow-2xl">
                   Scan My Resume Free
                 </Button>
-              </Link>
+              </div>
               <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-widest">
                 <CheckCircle2 className="w-4 h-4 text-[#1A66FF]" /> No credit card required.
               </div>

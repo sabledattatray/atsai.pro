@@ -25,7 +25,7 @@ const getAi = () => {
 const upload = multer({ storage: multer.memoryStorage() });
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
 
 // Razorpay Webhook for Edge Cases
 app.post('/api/webhooks/razorpay', express.json(), (req, res) => {

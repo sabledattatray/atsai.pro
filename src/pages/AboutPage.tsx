@@ -4,7 +4,7 @@ export default function AboutPage() {
   return (
     <div className="flex flex-col w-full min-h-[calc(100vh-80px)] bg-white text-black py-24 px-4">
       <div className="container mx-auto max-w-3xl">
-        <h1 className="text-5xl font-extrabold mb-10 tracking-tight">About ResumeCopilot</h1>
+        <h1 className="text-5xl font-extrabold mb-10 tracking-tight">About Resume Copilot</h1>
         
         <div className="prose prose-lg max-w-none text-gray-600">
            <p className="text-xl leading-relaxed text-black font-medium mb-8">
@@ -18,7 +18,7 @@ export default function AboutPage() {
 
            <h3 className="text-2xl font-bold text-black mt-12 mb-4">Our Mission</h3>
            <p>
-             We built ResumeCopilot to level the playing field. By reverse-engineering enterprise ATS platforms like Workday, Taleo, and Greenhouse, and coupling it with Google's Gemini AI, we give candidates the exact insights they need to pass the screening filters.
+             We built Resume Copilot to level the playing field. By reverse-engineering enterprise ATS platforms like Workday, Taleo, and Greenhouse, and coupling it with Google's Gemini AI, we give candidates the exact insights they need to pass the screening filters.
            </p>
            
            <h3 className="text-2xl font-bold text-black mt-12 mb-4">Our Tech</h3>
