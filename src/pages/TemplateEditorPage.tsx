@@ -3,7 +3,7 @@ import { useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Download, ArrowLeft, Wand2, Upload, FileText, LayoutTemplate, Palette, Sparkles, CheckCircle2, FileUp } from 'lucide-react';
 import { dummyResumes } from '@/lib/dummyResumes';
-import html2canvas from 'html2canvas';
+import domtoimage from 'dom-to-image-more';
 import { jsPDF } from 'jspdf';
 
 export default function TemplateEditorPage() {
@@ -55,26 +55,23 @@ export default function TemplateEditorPage() {
     
     try {
       setIsGeneratingPdf(true);
-      
-      const originalHeight = element.style.height;
-      const originalScroll = window.scrollY;
-      
-      // Attempt to ensure full length is captured
-      element.style.height = 'max-content';
-      
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
-      });
-      
-      element.style.height = originalHeight || '';
-      window.scrollTo(0, originalScroll);
-      
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      await new Promise(resolve => setTimeout(resolve, 100));
+
+      const scale = 2; // scale up for high resolution
       const isA4 = pageSize === 'a4';
       
+      const dataUrl = await domtoimage.toJpeg(element, {
+        quality: 1.0,
+        height: element.offsetHeight * scale,
+        width: element.offsetWidth * scale,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: element.offsetWidth + 'px',
+          height: element.offsetHeight + 'px'
+        }
+      });
+
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
@@ -82,9 +79,9 @@ export default function TemplateEditorPage() {
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
       
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${resumeData.name?.replace(/\s+/g, '_') || 'Resume'}.pdf`);
     } catch (e) {
       console.error('Error generating PDF:', e);

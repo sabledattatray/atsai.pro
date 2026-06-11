@@ -87,9 +87,9 @@ const groupedResumes = [
 
 const ResumesMenu = () => (
   <div className="relative group/res h-full flex items-center">
-    <Link to="/templates" className="hover:text-black transition-colors cursor-pointer flex items-center gap-1 h-full font-semibold">
+    <div className="hover:text-black transition-colors cursor-pointer flex items-center gap-1 h-full font-semibold">
       Resumes <ChevronDown className="w-3 h-3 text-gray-400 group-hover/res:rotate-180 transition-transform" />
-    </Link>
+    </div>
     
     <div className="absolute top-full left-1/2 -translate-x-1/2 w-[850px] bg-white border border-gray-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] rounded-b-xl p-8 opacity-0 invisible group-hover/res:opacity-100 group-hover/res:visible transition-all duration-200 pointer-events-none group-hover/res:pointer-events-auto z-50">
       <div className="grid grid-cols-3 gap-8">

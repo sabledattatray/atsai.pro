@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { coverLetterTemplates, slugify } from '../data/coverLetters';
 import { generateCoverLetter, CoverLetterStyle, getBaseRole, CoverLetterStructuredContent } from '../utils/coverLetterGenerator';
 import html2canvas from 'html2canvas';
+import domtoimage from 'dom-to-image-more';
 import { jsPDF } from 'jspdf';
 
 type ColorTheme = 'classic' | 'navy' | 'emerald' | 'burgundy';
@@ -72,39 +73,35 @@ export default function CoverLetterViewer() {
     
     try {
       setIsGeneratingPdf(true);
+      await new Promise(resolve => setTimeout(resolve, 100));
       
-      // Save current styles before modifying for capture
-      const originalHeight = element.style.height;
-      const originalScroll = window.scrollY;
-      
-      // Ensure element can be fully captured without scroll cut-off
-      element.style.height = 'max-content';
-      
-      const canvas = await html2canvas(element, {
-        scale: 2,
-        useCORS: true,
-        logging: false,
-        backgroundColor: '#ffffff'
+      const scale = 2; // High resolution
+      const dataUrl = await domtoimage.toJpeg(element, {
+        quality: 1.0,
+        height: element.offsetHeight * scale,
+        width: element.offsetWidth * scale,
+        style: {
+          transform: `scale(${scale})`,
+          transformOrigin: 'top left',
+          width: element.offsetWidth + 'px',
+          height: element.offsetHeight + 'px'
+        }
       });
       
-      // Restore styles
-      element.style.height = originalHeight || '';
-      window.scrollTo(0, originalScroll);
-      
-      const imgData = canvas.toDataURL('image/jpeg', 1.0);
-      
-      // Calculate dimensions (A4 size is 210x297mm)
       const pdf = new jsPDF({
         orientation: 'portrait',
         unit: 'mm',
         format: 'a4'
       });
       
+      // Calculate margins and dimensions
+      const margin = 10;
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      const availableWidth = pdfWidth - margin * 2;
+      const imgHeight = (element.offsetHeight * availableWidth) / element.offsetWidth;
       
-      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${templateName.replace(/\s+/g, '_')}_Cover_Letter.pdf`);
+      pdf.addImage(dataUrl, 'JPEG', margin, margin, availableWidth, imgHeight);
+      pdf.save(`${templateName?.replace(/\s+/g, '_') || 'Cover_Letter'}.pdf`);
     } catch (e) {
       console.error('Error generating PDF:', e);
       alert('Could not generate PDF. Please try again.');

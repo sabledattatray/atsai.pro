@@ -19,14 +19,7 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col w-full overflow-hidden">
       {/* Hero Section */}
-      <section className="relative pt-24 pb-24 lg:pt-36 lg:pb-40 bg-[#121328] overflow-hidden">
-        {/* Square Grid Overlay */}
-        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, #4F46E5 1px, transparent 1px), linear-gradient(to bottom, #4F46E5 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
-        
-        {/* Background Glows */}
-        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#1A66FF]/20 rounded-full blur-[100px] pointer-events-none"></div>
-        <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none"></div>
-
+      <section className="relative pt-24 pb-24 lg:pt-36 lg:pb-40 bg-gray-50 overflow-hidden">
         <div className="container mx-auto px-4 max-w-7xl flex flex-col lg:flex-row items-center gap-16 relative z-10">
           
           {/* Left Hero Content */}
@@ -36,30 +29,30 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-blue-300 text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] mb-8 rounded-full shadow-[0_0_15px_rgba(26,102,255,0.2)] backdrop-blur-sm">
-              <span className="w-2 h-2 bg-[#1A66FF] rounded-full animate-pulse shadow-[0_0_8px_rgba(26,102,255,0.8)]"></span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-gray-200 text-blue-600 text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] mb-8 rounded-full">
+              <span className="w-2 h-2 bg-[#1A66FF] rounded-full"></span>
               SaaS AI Engine Now Live
             </div>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] font-extrabold text-white leading-[1.05] tracking-tight mb-8">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-8">
               Beat the ATS. <br className="hidden sm:block lg:hidden xl:block" />
               <span className="text-[#1A66FF]">Land the Interview.</span>
             </h1>
-            <p className="text-lg sm:text-xl text-indigo-100/70 mb-10 max-w-2xl leading-relaxed font-medium">
+            <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed font-medium">
               Upload your resume and the job description. Our semantic AI engine analyzes keywords, detects missing skills, and rewrites your achievements for maximum ATS compatibility.
             </p>
             <div className="flex flex-col flex-wrap sm:flex-row items-center justify-center lg:justify-start gap-4 w-full mb-4">
               <Link to="/app" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto text-sm px-8 h-14 bg-[#1A66FF] hover:bg-blue-700 text-white font-bold tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(26,102,255,0.3)] hover:shadow-[0_0_30px_rgba(26,102,255,0.5)]">
+                <Button size="lg" className="w-full sm:w-auto text-sm px-8 h-14 bg-[#1A66FF] hover:bg-blue-700 text-white font-bold tracking-wider uppercase transition-all">
                   Scan My Resume Free
                 </Button>
               </Link>
               <Link to="/templates" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm px-8 h-14 border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wider uppercase transition-all backdrop-blur-sm">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm px-8 h-14 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 font-bold tracking-wider uppercase transition-all">
                   Build Your Resume
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-bold text-indigo-200/50 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
               <CheckCircle2 className="w-3 h-3 text-[#1A66FF]" /> No credit card required.
             </div>
           </motion.div>
@@ -74,12 +67,12 @@ export default function LandingPage() {
              {/* The Resume Preview Stage */}
              <div className="relative z-10 w-full max-w-sm sm:max-w-md w-[340px] sm:w-[420px] transition-transform hover:scale-[1.02] duration-700 ease-out">
                 {/* Main Resume Paper */}
-                <div className="bg-[#f8f9fa] rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col h-[560px] relative">
+                <div className="bg-[#f8f9fa] rounded-xl border border-gray-200 overflow-hidden flex flex-col h-[560px] relative">
                    <div className="h-10 bg-[#e5e7eb] flex items-center px-4 justify-between shrink-0 border-b border-gray-300">
                       <div className="flex gap-2">
-                         <div className="w-2.5 h-2.5 rounded-full bg-rose-400 border border-rose-500/20"></div>
-                         <div className="w-2.5 h-2.5 rounded-full bg-amber-400 border border-amber-500/20"></div>
-                         <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-emerald-500/20"></div>
+                         <div className="w-2.5 h-2.5 rounded-full bg-rose-400"></div>
+                         <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
+                         <div className="w-2.5 h-2.5 rounded-full bg-emerald-400"></div>
                       </div>
                       <div className="text-[9px] font-bold text-gray-500 uppercase tracking-widest flex items-center gap-1.5">
                          <Zap className="w-3 h-3 text-[#1A66FF]" /> AI Refinement
@@ -87,7 +80,7 @@ export default function LandingPage() {
                    </div>
                    
                    {/* Actual Resume Content - Scaled down */}
-                   <div className="flex-1 p-6 relative bg-white m-3 rounded shadow-sm border border-gray-200 overflow-hidden text-left">
+                   <div className="flex-1 p-6 relative bg-white m-3 rounded border border-gray-200 overflow-hidden text-left">
                        {/* Header */}
                        <div className="border-b-2 border-gray-900 pb-3 mb-4">
                           <h1 className="text-xl font-serif font-bold text-gray-900 tracking-tight leading-none mb-1 text-center">ALEXANDER WRIGHT</h1>
@@ -122,9 +115,9 @@ export default function LandingPage() {
                                       <li className="relative group">
                                          {/* AI Highlight Backdrop */}
                                          <span className="absolute -inset-x-1 -inset-y-0.5 bg-[#1A66FF]/10 rounded border border-[#1A66FF]/20 -z-10"></span>
-                                         <span className="absolute -left-2 top-1 w-1 h-1 bg-[#1A66FF] rounded-full shadow-[0_0_4px_rgba(26,102,255,0.8)]"></span>
+                                         <span className="absolute -left-2 top-1 w-1 h-1 bg-[#1A66FF] rounded-full"></span>
                                          <span className="font-medium text-gray-900">Implemented <span className="font-bold text-[#1A66FF]">CI/CD Pipelines</span> using GitHub Actions and <span className="font-bold text-[#1A66FF]">Docker</span>, decreasing deployment times by 65%.</span>
-                                         <span className="inline-block bg-[#1A66FF] text-white px-1 py-0 rounded-[2px] font-bold text-[5px] uppercase ml-1 relative -top-0.5 shadow-sm tracking-wider">Optimized ✨</span>
+                                         <span className="inline-block bg-[#1A66FF] text-white px-1 py-0 rounded-[2px] font-bold text-[5px] uppercase ml-1 relative -top-0.5 tracking-wider">Optimized ✨</span>
                                       </li>
                                       <li className="relative">
                                          <span className="absolute -left-2 top-1 w-0.5 h-0.5 bg-gray-500 rounded-full"></span>
@@ -165,8 +158,8 @@ export default function LandingPage() {
                                    <span className="px-1.5 py-0.5 bg-gray-50 text-gray-600 text-[6px] rounded border border-gray-200 font-semibold">TypeScript</span>
                                    <span className="px-1.5 py-0.5 bg-gray-50 text-gray-600 text-[6px] rounded border border-gray-200 font-semibold">Node.js</span>
                                    <span className="px-1.5 py-0.5 bg-gray-50 text-gray-600 text-[6px] rounded border border-gray-200 font-semibold">PostgreSQL</span>
-                                   <span className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-[6px] rounded font-bold shadow-sm relative"><span className="absolute -top-1 -right-1 flex h-1.5 w-1.5"><span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span><span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-indigo-500"></span></span>Docker</span>
-                                   <span className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-[6px] rounded font-bold shadow-sm relative">CI/CD Metrics</span>
+                                   <span className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-[6px] rounded font-bold relative">Docker</span>
+                                   <span className="px-1.5 py-0.5 bg-indigo-50 border border-indigo-200 text-indigo-700 text-[6px] rounded font-bold relative">CI/CD Metrics</span>
                                 </div>
                              </div>
                              
@@ -205,7 +198,7 @@ export default function LandingPage() {
                 <motion.div 
                    animate={{ y: [0, -12, 0] }}
                    transition={{ duration: 4.5, repeat: Infinity, ease: "easeInOut" }}
-                   className="absolute -top-6 -right-6 lg:-right-16 bg-white rounded-xl shadow-[0_15px_40px_-5px_rgba(0,0,0,0.15)] p-4 border border-gray-100 flex items-center gap-4 z-20"
+                   className="absolute -top-6 -right-6 lg:-right-16 bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-4 z-20"
                 >
                    <div className="relative w-12 h-12 flex items-center justify-center shrink-0">
                       <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
@@ -224,7 +217,7 @@ export default function LandingPage() {
                 <motion.div 
                    animate={{ y: [0, 8, 0] }}
                    transition={{ duration: 3.5, repeat: Infinity, ease: "easeInOut", delay: 1 }}
-                   className="absolute bottom-24 -left-6 lg:-left-12 bg-white rounded-xl shadow-[0_15px_40px_-5px_rgba(0,0,0,0.15)] p-4 border border-gray-100 flex items-center gap-3 z-20"
+                   className="absolute bottom-24 -left-6 lg:-left-12 bg-white rounded-xl border border-gray-200 p-4 flex items-center gap-3 z-20"
                 >
                    <div className="w-8 h-8 rounded-full bg-indigo-50 flex items-center justify-center shrink-0">
                      <CheckCircle2 className="w-4 h-4 text-indigo-500" />
