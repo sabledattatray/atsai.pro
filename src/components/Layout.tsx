@@ -39,6 +39,84 @@ const CoverLettersMenu = () => (
   </div>
 );
 
+const groupedResumes = [
+  {
+    category: 'Software & Tech',
+    items: [
+      { name: 'Software Engineer Minimalist', url: '/editor?template=tech&role=Software%20Engineer' },
+      { name: 'Data Scientist Standard', url: '/editor?template=tech&role=Data%20Scientist' },
+      { name: 'Ultra Minimal', url: '/editor?template=minimalist&role=Software%20Engineer' },
+      { name: 'Startup Pitch', url: '/editor?template=startup&role=Software%20Engineer' },
+    ]
+  },
+  {
+    category: 'Management & Sales',
+    items: [
+      { name: 'The PM Executive', url: '/editor?template=executive&role=Product%20Manager' },
+      { name: 'Sales Professional', url: '/editor?template=business&role=Sales' },
+      { name: 'Bold Leadership', url: '/editor?template=bold&role=Product%20Manager' },
+      { name: 'Accounting Corporate', url: '/editor?template=executive&role=Accounting' },
+    ]
+  },
+  {
+    category: 'Creative & Design',
+    items: [
+      { name: 'Creative Designer', url: '/editor?template=modern&role=Designer' },
+      { name: 'Creative Vibrant', url: '/editor?template=creative&role=Designer' },
+      { name: 'Marketing Strategist', url: '/editor?template=business&role=Marketing' },
+      { name: 'Infographic Timeline', url: '/editor?template=infographic&role=Marketing' },
+    ]
+  },
+  {
+    category: 'Engineering & Education',
+    items: [
+      { name: 'Engineering Pro', url: '/editor?template=modern&role=Engineer' },
+      { name: 'Educator Template', url: '/editor?template=executive&role=Teacher' },
+      { name: 'Academic Serif', url: '/editor?template=academic&role=Teacher' },
+    ]
+  },
+  {
+    category: 'Entry Level / Freshers',
+    items: [
+      { name: 'Fresher Minimal', url: '/editor?template=minimalist&role=Fresher' },
+      { name: 'Fresher Modern', url: '/editor?template=modern&role=Fresher' },
+      { name: 'Fresher Clean', url: '/editor?template=executive&role=Fresher' },
+    ]
+  }
+];
+
+const ResumesMenu = () => (
+  <div className="relative group/res h-full flex items-center">
+    <Link to="/templates" className="hover:text-black transition-colors cursor-pointer flex items-center gap-1 h-full font-semibold">
+      Resumes <ChevronDown className="w-3 h-3 text-gray-400 group-hover/res:rotate-180 transition-transform" />
+    </Link>
+    
+    <div className="absolute top-full left-1/2 -translate-x-1/2 w-[850px] bg-white border border-gray-100 shadow-[0_20px_40px_-15px_rgba(0,0,0,0.1)] rounded-b-xl p-8 opacity-0 invisible group-hover/res:opacity-100 group-hover/res:visible transition-all duration-200 pointer-events-none group-hover/res:pointer-events-auto z-50">
+      <div className="grid grid-cols-3 gap-8">
+        {groupedResumes.map((cat, i) => (
+          <div key={i} className="flex flex-col gap-2">
+            <div className="text-[10px] font-extrabold text-black uppercase tracking-widest border-b border-gray-100 pb-2 mb-1">{cat.category}</div>
+            <ul className="flex flex-col gap-1.5 normal-case tracking-normal">
+              {cat.items.map(item => (
+                <li key={item.name}>
+                  <Link to={item.url} className="text-gray-500 hover:text-[#1A66FF] text-xs font-medium truncate block w-full transition-colors">
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link to="/templates" className="text-[#1A66FF] hover:underline text-xs font-semibold block mt-1">
+                  View all &rarr;
+                </Link>
+              </li>
+            </ul>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+);
+
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const location = useLocation();
@@ -60,7 +138,7 @@ export default function Layout() {
                 <Link to="/features" className="hover:text-black transition-colors">Features</Link>
                 <Link to="/pricing" className="hover:text-black transition-colors">Pricing</Link>
                 <CoverLettersMenu />
-                <Link to="/templates" className="hover:text-black transition-colors">Templates</Link>
+                <ResumesMenu />
                 <div className="h-4 w-px bg-gray-200" />
                 <Link to="/signin" className="hover:text-black transition-colors">Sign In</Link>
                 <Link to="/app">
@@ -76,7 +154,7 @@ export default function Layout() {
                   <FileText className="w-4 h-4" /> New Analysis
                 </Link>
                 <CoverLettersMenu />
-                <Link to="/templates" className="hover:text-black transition-colors">Templates</Link>
+                <ResumesMenu />
                 <Link to="/career-hub" className="hover:text-black transition-colors">Career Pathways</Link>
                 <div className="h-4 w-px bg-gray-200" />
                 <button className="flex items-center gap-2 hover:text-black">
@@ -107,7 +185,7 @@ export default function Layout() {
                 <Link to="/features" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4">Features</Link>
                 <Link to="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4">Pricing</Link>
                 <a href="/#cover-letters" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4">Cover Letters</a>
-                <Link to="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4">Templates</Link>
+                <Link to="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4">Resumes</Link>
                 <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4">Sign In</Link>
                 <Link to="/app" onClick={() => setIsMobileMenuOpen(false)} className="mt-4">
                   <Button size="lg" className="w-full text-sm">GET STARTED FREE</Button>
@@ -125,7 +203,7 @@ export default function Layout() {
                   Cover Letters
                 </a>
                 <Link to="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4 flex items-center gap-3">
-                  Templates
+                  Resumes
                 </Link>
                 <Link to="/career-hub" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-gray-100 pb-4 flex items-center gap-3">
                   Career Pathways

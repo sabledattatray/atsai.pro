@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Download, ArrowLeft, Wand2, Upload, FileText, LayoutTemplate, Palette, Sparkles, CheckCircle2, FileUp } from 'lucide-react';
 import { dummyResumes } from '@/lib/dummyResumes';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 
 export default function TemplateEditorPage() {
   const [searchParams] = useSearchParams();
@@ -23,6 +25,8 @@ export default function TemplateEditorPage() {
   const [resumeData, setResumeData] = useState(dummyResumes[initialRole] || dummyResumes['Software Engineer']);
 
   const [sidebarWidth, setSidebarWidth] = useState(400);
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const startResizing = React.useCallback((mouseDownEvent: React.MouseEvent) => {
     mouseDownEvent.preventDefault();
@@ -45,8 +49,49 @@ export default function TemplateEditorPage() {
     document.addEventListener('mouseup', stopDrag);
   }, [sidebarWidth]);
 
-  const handlePrint = () => {
-    window.print();
+  const handlePrint = async () => {
+    const element = pdfRef.current;
+    if (!element) return;
+    
+    try {
+      setIsGeneratingPdf(true);
+      
+      const originalHeight = element.style.height;
+      const originalScroll = window.scrollY;
+      
+      // Attempt to ensure full length is captured
+      element.style.height = 'max-content';
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      element.style.height = originalHeight || '';
+      window.scrollTo(0, originalScroll);
+      
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      const isA4 = pageSize === 'a4';
+      
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: isA4 ? 'a4' : 'letter'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${resumeData.name?.replace(/\s+/g, '_') || 'Resume'}.pdf`);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+      alert('Could not generate PDF.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string, idx?: number, subfield?: string) => {
@@ -122,8 +167,9 @@ export default function TemplateEditorPage() {
           <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={handleImport}>
              <FileUp className="w-4 h-4 mr-2" /> Import Existing Resume
           </Button>
-          <Button onClick={handlePrint} className="bg-green-600 hover:bg-green-700 text-white font-medium shadow-md transition-colors">
-            <Download className="w-4 h-4 mr-2" /> Download PDF
+          <Button onClick={handlePrint} disabled={isGeneratingPdf} className="bg-green-600 hover:bg-green-700 text-white font-medium shadow-md transition-colors">
+            {isGeneratingPdf ? <CheckCircle2 className="w-4 h-4 mr-2 animate-pulse" /> : <Download className="w-4 h-4 mr-2" />}
+            {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
           </Button>
         </div>
       </div>
@@ -473,6 +519,8 @@ export default function TemplateEditorPage() {
         {/* Live Preview / Canvas */}
         <div className="flex-1 bg-[#b5b8c0] overflow-y-auto flex justify-center py-10 px-4 print:p-0 print:bg-white custom-scrollbar print:overflow-visible print:block print:h-auto">
           <div 
+             ref={pdfRef}
+             id="pdf-content"
              className={`bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)] origin-top mx-auto print:shadow-none print:mx-0 transition-all duration-300 ${pageSize === 'a4' ? 'w-[210mm] min-h-[297mm]' : 'w-[8.5in] min-h-[11in]'} ${fontFamily} ${fontSize}`}
           >
              {selectedTemplate === 'modern' ? (

@@ -71,13 +71,10 @@ export default function LandingPage() {
             transition={{ duration: 0.7, delay: 0.2 }}
             className="w-full lg:w-1/2 relative flex justify-center lg:justify-end mt-10 lg:mt-0"
           >
-             {/* Decorative Background Elements */}
-             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] lg:w-[140%] aspect-square bg-gradient-to-tr from-[#1A66FF]/10 to-purple-500/10 rounded-full blur-3xl shadow-[inset_0_0_100px_rgba(255,255,255,0.5)] z-0 pointer-events-none"></div>
-
              {/* The Resume Preview Stage */}
              <div className="relative z-10 w-full max-w-sm sm:max-w-md w-[340px] sm:w-[420px] transition-transform hover:scale-[1.02] duration-700 ease-out">
                 {/* Main Resume Paper */}
-                <div className="bg-[#f8f9fa] rounded-xl shadow-[0_30px_80px_-20px_rgba(0,0,0,0.8),_0_0_40px_rgba(26,102,255,0.2)] border border-white/10 overflow-hidden flex flex-col h-[560px] relative">
+                <div className="bg-[#f8f9fa] rounded-xl shadow-xl border border-gray-200 overflow-hidden flex flex-col h-[560px] relative">
                    <div className="h-10 bg-[#e5e7eb] flex items-center px-4 justify-between shrink-0 border-b border-gray-300">
                       <div className="flex gap-2">
                          <div className="w-2.5 h-2.5 rounded-full bg-rose-400 border border-rose-500/20"></div>

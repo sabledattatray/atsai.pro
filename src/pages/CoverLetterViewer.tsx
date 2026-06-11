@@ -1,20 +1,33 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Copy, CheckCircle2, FileText, Sparkles, Zap, Briefcase } from 'lucide-react';
+import { ArrowLeft, Copy, CheckCircle2, FileText, Sparkles, Zap, Briefcase, Camera, Trash2, Printer, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { coverLetterTemplates, slugify } from '../data/coverLetters';
-import { generateCoverLetter, CoverLetterStyle, getBaseRole } from '../utils/coverLetterGenerator';
+import { generateCoverLetter, CoverLetterStyle, getBaseRole, CoverLetterStructuredContent } from '../utils/coverLetterGenerator';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
+
+type ColorTheme = 'classic' | 'navy' | 'emerald' | 'burgundy';
+
+const THEME_COLORS = {
+  classic: { bg: 'bg-white', text: 'text-gray-900', border: 'border-gray-200', accent: 'text-gray-800' },
+  navy: { bg: 'bg-[#0A192F]', text: 'text-white', border: 'border-[#172A45]', accent: 'text-blue-400' },
+  emerald: { bg: 'bg-[#064e3b]', text: 'text-white', border: 'border-[#065f46]', accent: 'text-emerald-400' },
+  burgundy: { bg: 'bg-[#4c0519]', text: 'text-white', border: 'border-[#701a2f]', accent: 'text-rose-400' },
+};
 
 export default function CoverLetterViewer() {
   const { slug } = useParams<{ slug: string }>();
   const [templateName, setTemplateName] = useState<string>('');
   const [selectedStyle, setSelectedStyle] = useState<CoverLetterStyle>('Professional');
-  const [content, setContent] = useState<string>('');
+  const [content, setContent] = useState<CoverLetterStructuredContent | null>(null);
   const [copied, setCopied] = useState(false);
 
-  // Form State
-  const [companyName, setCompanyName] = useState('[Company Name]');
-  const [candidateName, setCandidateName] = useState('[Your Name]');
+  // Styling & Options
+  const [colorTheme, setColorTheme] = useState<ColorTheme>('classic');
+  const [headshotUrl, setHeadshotUrl] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     if (slug) {
@@ -22,7 +35,6 @@ export default function CoverLetterViewer() {
       if (match) {
         setTemplateName(match);
       } else {
-        // Fallback if not found perfectly
         setTemplateName(slug.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '));
       }
     }
@@ -31,14 +43,85 @@ export default function CoverLetterViewer() {
   useEffect(() => {
     if (templateName) {
       const role = getBaseRole(templateName);
-      setContent(generateCoverLetter(role, selectedStyle, companyName, candidateName));
+      setContent(generateCoverLetter(role, selectedStyle, '[Company Name]', '[Your Name]'));
     }
-  }, [templateName, selectedStyle, companyName, candidateName]);
+  }, [templateName, selectedStyle]);
+
+  // Auto-resize body textarea
+  useEffect(() => {
+    if (bodyRef.current) {
+      bodyRef.current.style.height = 'inherit';
+      bodyRef.current.style.height = `${bodyRef.current.scrollHeight}px`;
+    }
+  }, [content?.body]);
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(content);
+    if (!content) return;
+    const fullText = `${content.applicantDetails}\n\n${content.recipientDetails}\n\n${content.greeting}\n\n${content.body}\n\n${content.signOff}`;
+    navigator.clipboard.writeText(fullText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const pdfRef = useRef<HTMLDivElement>(null);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  const handlePrint = async () => {
+    const element = pdfRef.current;
+    if (!element) return;
+    
+    try {
+      setIsGeneratingPdf(true);
+      
+      // Save current styles before modifying for capture
+      const originalHeight = element.style.height;
+      const originalScroll = window.scrollY;
+      
+      // Ensure element can be fully captured without scroll cut-off
+      element.style.height = 'max-content';
+      
+      const canvas = await html2canvas(element, {
+        scale: 2,
+        useCORS: true,
+        logging: false,
+        backgroundColor: '#ffffff'
+      });
+      
+      // Restore styles
+      element.style.height = originalHeight || '';
+      window.scrollTo(0, originalScroll);
+      
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+      
+      // Calculate dimensions (A4 size is 210x297mm)
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+      
+      pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      pdf.save(`${templateName.replace(/\s+/g, '_')}_Cover_Letter.pdf`);
+    } catch (e) {
+      console.error('Error generating PDF:', e);
+      alert('Could not generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setHeadshotUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const getStyleIcon = (style: CoverLetterStyle) => {
@@ -49,64 +132,58 @@ export default function CoverLetterViewer() {
     }
   };
 
-  if (!templateName) {
+  const updateContent = (field: keyof CoverLetterStructuredContent, value: string) => {
+    setContent(prev => prev ? { ...prev, [field]: value } : null);
+  };
+
+  // Adjust textarea height on change
+  const handleTextareaChange = (field: keyof CoverLetterStructuredContent, e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    updateContent(field, e.target.value);
+    e.target.style.height = 'inherit';
+    e.target.style.height = `${e.target.scrollHeight}px`;
+  };
+
+  if (!templateName || !content) {
     return <div className="p-20 text-center">Loading...</div>;
   }
 
+  const themeClasses = THEME_COLORS[colorTheme];
+
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pb-24">
+    <div className="min-h-screen bg-[#F8F9FA] pb-24 print:bg-white print:pb-0">
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30">
-        <div className="container mx-auto px-4 max-w-5xl py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 print:hidden">
+        <div className="container mx-auto px-4 max-w-7xl py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
             <Link to="/" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600">
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{templateName}</h1>
-              <p className="text-xs text-gray-500 font-medium tracking-wide uppercase">AI-Generated Template Versions</p>
+              <h1 className="text-xl font-bold text-gray-900">{templateName} Editor</h1>
+              <p className="text-xs text-gray-500 font-medium tracking-wide">Edit exactly what you want, directly on the page.</p>
             </div>
           </div>
-          <Button onClick={handleCopy} className="gap-2 shrink-0 bg-black hover:bg-gray-800">
-            {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-            {copied ? 'Copied!' : 'Copy to Clipboard'}
-          </Button>
+          <div className="flex items-center gap-3">
+            <Button variant="outline" onClick={handlePrint} className="gap-2" disabled={isGeneratingPdf}>
+              {isGeneratingPdf ? <CheckCircle2 className="w-4 h-4 animate-pulse" /> : <Download className="w-4 h-4" />}
+              {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
+            </Button>
+            <Button onClick={handleCopy} className="gap-2 bg-black hover:bg-gray-800">
+              {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              {copied ? 'Copied!' : 'Copy Text'}
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="container mx-auto px-4 max-w-5xl mt-8 flex flex-col lg:flex-row gap-8">
+      <div className="container mx-auto px-4 max-w-7xl mt-8 flex flex-col lg:flex-row gap-8 lg:items-start">
         
         {/* Controls Sidebar */}
-        <div className="w-full lg:w-1/3 flex flex-col gap-6">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <h3 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-widest">Personalize Variables</h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">Target Company</label>
-                <input 
-                  type="text" 
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-[#1A66FF] focus:border-transparent outline-none"
-                  placeholder="e.g. Google, Apple, etc."
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1.5">Your Name</label>
-                <input 
-                  type="text" 
-                  value={candidateName}
-                  onChange={(e) => setCandidateName(e.target.value)}
-                  className="w-full px-3 py-2 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-[#1A66FF] focus:border-transparent outline-none"
-                  placeholder="e.g. John Doe"
-                />
-              </div>
-            </div>
-          </div>
-
+        <div className="w-full lg:w-80 shrink-0 flex flex-col gap-6 print:hidden sticky top-32">
+          
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h3 className="font-bold text-gray-900 text-sm uppercase tracking-widest">Select Tone & Style</h3>
+              <h3 className="font-bold text-gray-900 text-sm tracking-wide">Writing Style</h3>
             </div>
             <div className="flex flex-col p-2 space-y-1">
               {(['Professional', 'Creative', 'Modern'] as CoverLetterStyle[]).map(style => (
@@ -120,33 +197,128 @@ export default function CoverLetterViewer() {
                   </div>
                   <div className="flex-1">
                     <div className="font-bold">{style}</div>
-                    <div className="text-[10px] opacity-70">
-                      {style === 'Professional' && "Formal, structured, and traditional."}
-                      {style === 'Creative' && "Story-driven, passionate, unique."}
-                      {style === 'Modern' && "Punchy, confident, results-focused."}
-                    </div>
                   </div>
                   {selectedStyle === style && <CheckCircle2 className="w-4 h-4 text-[#1A66FF]" />}
                 </button>
               ))}
             </div>
           </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 className="font-bold text-gray-900 text-sm tracking-wide">Color Theme</h3>
+            </div>
+            <div className="p-4 grid grid-cols-4 gap-3">
+              {(Object.keys(THEME_COLORS) as ColorTheme[]).map((theme) => (
+                <button
+                  key={theme}
+                  onClick={() => setColorTheme(theme)}
+                  className={`aspect-square rounded-full border-2 transition-all ${colorTheme === theme ? 'ring-2 ring-offset-2 ring-[#1A66FF] border-white' : 'border-transparent hover:scale-105'}`}
+                  style={{
+                    backgroundColor: theme === 'classic' ? '#ffffff' : (theme === 'navy' ? '#0A192F' : (theme === 'emerald' ? '#064e3b' : '#4c0519')),
+                    boxShadow: theme === 'classic' ? 'inset 0 0 0 1px #e5e7eb' : 'none'
+                  }}
+                  title={theme}
+                />
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div className="p-4 border-b border-gray-100 bg-gray-50">
+              <h3 className="font-bold text-gray-900 text-sm tracking-wide">Headshot Image</h3>
+            </div>
+            <div className="p-4 flex flex-col items-center gap-3">
+              {headshotUrl ? (
+                <div className="relative group">
+                  <img src={headshotUrl} alt="Headshot" className="w-24 h-24 rounded-full object-cover border border-gray-200 shadow-sm" />
+                  <button 
+                    onClick={() => setHeadshotUrl(null)}
+                    className="absolute inset-0 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="w-5 h-5" />
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 hover:text-[#1A66FF] hover:border-[#1A66FF] hover:bg-blue-50 transition-colors"
+                >
+                  <Camera className="w-6 h-6 mb-1" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">Upload</span>
+                </button>
+              )}
+              <input 
+                type="file" 
+                ref={fileInputRef} 
+                onChange={handleImageUpload} 
+                accept="image/*" 
+                className="hidden" 
+              />
+            </div>
+          </div>
+
         </div>
 
-        {/* Paper View */}
-        <div className="w-full lg:w-2/3">
-          <div className="bg-white rounded-xl shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-200 overflow-hidden">
-            <div className="h-10 bg-gray-100 border-b border-gray-200 flex items-center px-4 gap-2">
-               <div className="w-2.5 h-2.5 rounded-full bg-red-400"></div>
-               <div className="w-2.5 h-2.5 rounded-full bg-amber-400"></div>
-               <div className="w-2.5 h-2.5 rounded-full bg-green-400"></div>
-               <div className="ml-4 text-xs text-gray-400 font-mono flex items-center gap-2">
-                  <FileText className="w-3.5 h-3.5" /> preview.txt
-               </div>
+        {/* Paper View - Fully Editable */}
+        <div className="w-full lg:flex-1">
+          <div ref={pdfRef} className="bg-white rounded-xl overflow-hidden transition-colors duration-300 print:shadow-none print:border-none print:m-0 print:p-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-200">
+            
+            {/* Header portion with colored background option */}
+            <div className={`p-8 sm:p-14 border-b ${themeClasses.border} flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between ${themeClasses.bg} ${themeClasses.text}`}>
+              <div className="flex-1 w-full">
+                <textarea 
+                  value={content.applicantDetails}
+                  onChange={(e) => handleTextareaChange('applicantDetails', e)}
+                  spellCheck={false}
+                  className={`w-full bg-transparent resize-none outline-none font-sans leading-relaxed focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden ${colorTheme !== 'classic' ? 'text-white placeholder-white/50' : 'text-gray-900'}`}
+                  rows={content.applicantDetails.split('\n').length}
+                />
+              </div>
+              {headshotUrl && (
+                <div className="shrink-0">
+                  <img src={headshotUrl} alt="Applicant Headshot" className={`w-28 h-28 rounded-full object-cover border-4 shadow-sm ${colorTheme !== 'classic' ? 'border-white/20' : 'border-white'}`} style={{ boxShadow: colorTheme === 'classic' ? '0 4px 14px rgba(0,0,0,0.08)' : 'none' }} />
+                </div>
+              )}
             </div>
-            <div className="p-8 sm:p-12 font-serif text-gray-800 leading-relaxed whitespace-pre-wrap text-[15px]">
-               {content}
+
+            {/* Main content area */}
+            <div className="p-8 sm:p-14 pt-8 font-serif leading-relaxed text-[15px] flex flex-col gap-6 text-gray-800 bg-white">
+              
+              <textarea 
+                value={content.recipientDetails}
+                onChange={(e) => handleTextareaChange('recipientDetails', e)}
+                spellCheck={false}
+                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden"
+                rows={content.recipientDetails.split('\n').length}
+              />
+
+              <input 
+                value={content.greeting}
+                onChange={(e) => updateContent('greeting', e.target.value)}
+                spellCheck={false}
+                className="w-full bg-transparent outline-none focus:ring-1 focus:ring-blue-500/50 rounded font-bold"
+              />
+
+              <textarea 
+                ref={bodyRef}
+                value={content.body}
+                onChange={(e) => handleTextareaChange('body', e)}
+                spellCheck={false}
+                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden leading-relaxed"
+                rows={Math.max(10, content.body.split('\n').length)}
+              />
+
+              <textarea 
+                value={content.signOff}
+                onChange={(e) => handleTextareaChange('signOff', e)}
+                spellCheck={false}
+                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden mt-4"
+                rows={content.signOff.split('\n').length}
+              />
+
             </div>
+            
           </div>
         </div>
 
