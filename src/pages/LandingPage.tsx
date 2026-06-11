@@ -19,7 +19,14 @@ export default function LandingPage() {
   return (
     <div className="flex flex-col w-full overflow-hidden">
       {/* Hero Section */}
-      <section className="relative pt-24 pb-24 lg:pt-36 lg:pb-40 bg-gray-50 overflow-hidden">
+      <section className="relative pt-24 pb-24 lg:pt-36 lg:pb-40 bg-[#121328] overflow-hidden">
+        {/* Square Grid Overlay */}
+        <div className="absolute inset-0 z-0 opacity-20 pointer-events-none" style={{ backgroundImage: 'linear-gradient(to right, #4F46E5 1px, transparent 1px), linear-gradient(to bottom, #4F46E5 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+        
+        {/* Background Glows */}
+        <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-[#1A66FF]/20 rounded-full blur-[100px] pointer-events-none"></div>
+        <div className="absolute bottom-[-10%] left-[-5%] w-[400px] h-[400px] bg-indigo-500/20 rounded-full blur-[100px] pointer-events-none"></div>
+
         <div className="container mx-auto px-4 max-w-7xl flex flex-col lg:flex-row items-center gap-16 relative z-10">
           
           {/* Left Hero Content */}
@@ -29,30 +36,30 @@ export default function LandingPage() {
             transition={{ duration: 0.5 }}
             className="w-full lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white border border-gray-200 text-blue-600 text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] mb-8 rounded-full">
-              <span className="w-2 h-2 bg-[#1A66FF] rounded-full"></span>
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-white/5 border border-white/10 text-blue-300 text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] mb-8 rounded-full shadow-[0_0_15px_rgba(26,102,255,0.2)] backdrop-blur-sm">
+              <span className="w-2 h-2 bg-[#1A66FF] rounded-full animate-pulse shadow-[0_0_8px_rgba(26,102,255,0.8)]"></span>
               SaaS AI Engine Now Live
             </div>
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] font-extrabold text-gray-900 leading-[1.05] tracking-tight mb-8">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-[4.5rem] font-extrabold text-white leading-[1.05] tracking-tight mb-8">
               Beat the ATS. <br className="hidden sm:block lg:hidden xl:block" />
               <span className="text-[#1A66FF]">Land the Interview.</span>
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 mb-10 max-w-2xl leading-relaxed font-medium">
+            <p className="text-lg sm:text-xl text-indigo-100/70 mb-10 max-w-2xl leading-relaxed font-medium">
               Upload your resume and the job description. Our semantic AI engine analyzes keywords, detects missing skills, and rewrites your achievements for maximum ATS compatibility.
             </p>
             <div className="flex flex-col flex-wrap sm:flex-row items-center justify-center lg:justify-start gap-4 w-full mb-4">
               <Link to="/app" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full sm:w-auto text-sm px-8 h-14 bg-[#1A66FF] hover:bg-blue-700 text-white font-bold tracking-wider uppercase transition-all">
+                <Button size="lg" className="w-full sm:w-auto text-sm px-8 h-14 bg-[#1A66FF] hover:bg-blue-700 text-white font-bold tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(26,102,255,0.3)] hover:shadow-[0_0_30px_rgba(26,102,255,0.5)]">
                   Scan My Resume Free
                 </Button>
               </Link>
               <Link to="/templates" className="w-full sm:w-auto">
-                <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm px-8 h-14 border-gray-300 bg-white hover:bg-gray-50 text-gray-900 font-bold tracking-wider uppercase transition-all">
+                <Button size="lg" variant="outline" className="w-full sm:w-auto text-sm px-8 h-14 border-white/20 bg-white/5 hover:bg-white/10 text-white font-bold tracking-wider uppercase transition-all backdrop-blur-sm">
                   Build Your Resume
                 </Button>
               </Link>
             </div>
-            <div className="flex items-center gap-2 text-[11px] font-bold text-gray-500 uppercase tracking-widest">
+            <div className="flex items-center gap-2 text-[11px] font-bold text-indigo-200/50 uppercase tracking-widest">
               <CheckCircle2 className="w-3 h-3 text-[#1A66FF]" /> No credit card required.
             </div>
           </motion.div>

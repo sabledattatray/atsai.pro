@@ -67,47 +67,8 @@ export default function CoverLetterViewer() {
   const pdfRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  const handlePrint = async () => {
-    const element = pdfRef.current;
-    if (!element) return;
-    
-    try {
-      setIsGeneratingPdf(true);
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
-      const scale = 2; // High resolution
-      const dataUrl = await domtoimage.toJpeg(element, {
-        quality: 1.0,
-        height: element.offsetHeight * scale,
-        width: element.offsetWidth * scale,
-        style: {
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          width: element.offsetWidth + 'px',
-          height: element.offsetHeight + 'px'
-        }
-      });
-      
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-      
-      // Calculate margins and dimensions
-      const margin = 10;
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const availableWidth = pdfWidth - margin * 2;
-      const imgHeight = (element.offsetHeight * availableWidth) / element.offsetWidth;
-      
-      pdf.addImage(dataUrl, 'JPEG', margin, margin, availableWidth, imgHeight);
-      pdf.save(`${templateName?.replace(/\s+/g, '_') || 'Cover_Letter'}.pdf`);
-    } catch (e) {
-      console.error('Error generating PDF:', e);
-      alert('Could not generate PDF. Please try again.');
-    } finally {
-      setIsGeneratingPdf(false);
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,9 +122,9 @@ export default function CoverLetterViewer() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={handlePrint} className="gap-2" disabled={isGeneratingPdf}>
-              {isGeneratingPdf ? <CheckCircle2 className="w-4 h-4 animate-pulse" /> : <Download className="w-4 h-4" />}
-              {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
+            <Button variant="outline" onClick={handlePrint} className="gap-2">
+              <Download className="w-4 h-4" />
+              Print / Save PDF
             </Button>
             <Button onClick={handleCopy} className="gap-2 bg-black hover:bg-gray-800">
               {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}

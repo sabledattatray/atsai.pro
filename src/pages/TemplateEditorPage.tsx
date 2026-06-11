@@ -49,46 +49,8 @@ export default function TemplateEditorPage() {
     document.addEventListener('mouseup', stopDrag);
   }, [sidebarWidth]);
 
-  const handlePrint = async () => {
-    const element = pdfRef.current;
-    if (!element) return;
-    
-    try {
-      setIsGeneratingPdf(true);
-      await new Promise(resolve => setTimeout(resolve, 100));
-
-      const scale = 2; // scale up for high resolution
-      const isA4 = pageSize === 'a4';
-      
-      const dataUrl = await domtoimage.toJpeg(element, {
-        quality: 1.0,
-        height: element.offsetHeight * scale,
-        width: element.offsetWidth * scale,
-        style: {
-          transform: `scale(${scale})`,
-          transformOrigin: 'top left',
-          width: element.offsetWidth + 'px',
-          height: element.offsetHeight + 'px'
-        }
-      });
-
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: isA4 ? 'a4' : 'letter'
-      });
-      
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (element.offsetHeight * pdfWidth) / element.offsetWidth;
-      
-      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save(`${resumeData.name?.replace(/\s+/g, '_') || 'Resume'}.pdf`);
-    } catch (e) {
-      console.error('Error generating PDF:', e);
-      alert('Could not generate PDF.');
-    } finally {
-      setIsGeneratingPdf(false);
-    }
+  const handlePrint = () => {
+    window.print();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, field: string, idx?: number, subfield?: string) => {
@@ -164,9 +126,9 @@ export default function TemplateEditorPage() {
           <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={handleImport}>
              <FileUp className="w-4 h-4 mr-2" /> Import Existing Resume
           </Button>
-          <Button onClick={handlePrint} disabled={isGeneratingPdf} className="bg-green-600 hover:bg-green-700 text-white font-medium shadow-md transition-colors">
-            {isGeneratingPdf ? <CheckCircle2 className="w-4 h-4 mr-2 animate-pulse" /> : <Download className="w-4 h-4 mr-2" />}
-            {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
+          <Button onClick={handlePrint} className="bg-green-600 hover:bg-green-700 text-white font-medium shadow-md transition-colors">
+            <Download className="w-4 h-4 mr-2" />
+            Print / Save PDF
           </Button>
         </div>
       </div>
