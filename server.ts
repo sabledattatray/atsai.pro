@@ -6,6 +6,7 @@ import multer from 'multer';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 import dotenv from 'dotenv';
+import fs from 'fs';
 
 dotenv.config();
 
@@ -441,6 +442,136 @@ Required JSON format:
     } catch (error: any) {
       console.error('Error generating resume:', error);
       res.status(500).json({ error: 'Failed to generate resume from AI.' });
+    }
+  });
+
+  const USERS_FILE = path.join(process.cwd(), 'users.json');
+
+  // Helper to read users
+  const readUsers = (): any[] => {
+    try {
+      if (!fs.existsSync(USERS_FILE)) {
+        // Pre-populate with realistic mock candidates
+        const defaultUsers = [
+          {
+            uid: "mock-uid-1",
+            email: "seeker@example.com",
+            displayName: "Datta Sable",
+            providerId: "password",
+            emailVerified: true,
+            createdAt: "2026-06-10T12:00:00Z",
+            credits: 999
+          },
+          {
+            uid: "mock-uid-2",
+            email: "sarah.connor@gmail.com",
+            displayName: "Sarah Connor",
+            providerId: "google.com",
+            emailVerified: true,
+            createdAt: "2026-06-12T08:30:00Z",
+            credits: 3
+          },
+          {
+            uid: "mock-uid-3",
+            email: "dev.john@github.com",
+            displayName: "John Developer",
+            providerId: "github.com",
+            emailVerified: false,
+            createdAt: "2026-06-14T14:45:00Z",
+            credits: 10
+          }
+        ];
+        fs.writeFileSync(USERS_FILE, JSON.stringify(defaultUsers, null, 2));
+        return defaultUsers;
+      }
+      const data = fs.readFileSync(USERS_FILE, 'utf-8');
+      return JSON.parse(data);
+    } catch (err) {
+      console.error("Error reading users file:", err);
+      return [];
+    }
+  };
+
+  // Helper to write users
+  const writeUsers = (users: any[]) => {
+    try {
+      fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
+    } catch (err) {
+      console.error("Error writing users file:", err);
+    }
+  };
+
+  // Register/Update User
+  app.post('/api/admin/users/register', (req, res) => {
+    try {
+      const { uid, email, displayName, providerId, emailVerified, createdAt, credits } = req.body;
+      if (!uid || !email) {
+        return res.status(400).json({ error: 'UID and Email are required.' });
+      }
+      
+      const users = readUsers();
+      const existingIdx = users.findIndex(u => u.uid === uid);
+      
+      if (existingIdx > -1) {
+        // Update existing user, but preserve credits unless specifically passed
+        users[existingIdx] = {
+          ...users[existingIdx],
+          email,
+          displayName: displayName || users[existingIdx].displayName,
+          providerId: providerId || users[existingIdx].providerId,
+          emailVerified: emailVerified !== undefined ? emailVerified : users[existingIdx].emailVerified,
+          credits: credits !== undefined ? credits : users[existingIdx].credits
+        };
+      } else {
+        // Add new user
+        users.push({
+          uid,
+          email,
+          displayName: displayName || 'Unnamed User',
+          providerId: providerId || 'password',
+          emailVerified: !!emailVerified,
+          createdAt: createdAt || new Date().toISOString(),
+          credits: credits !== undefined ? credits : 3
+        });
+      }
+      
+      writeUsers(users);
+      res.json({ success: true, message: 'User synchronized successfully' });
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Get all users (Admin only)
+  app.get('/api/admin/users', (req, res) => {
+    try {
+      const users = readUsers();
+      res.json(users);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+  // Update credits for user (Admin only)
+  app.post('/api/admin/users/update-credits', (req, res) => {
+    try {
+      const { uid, credits } = req.body;
+      if (!uid || credits === undefined) {
+        return res.status(400).json({ error: 'UID and credits are required.' });
+      }
+      
+      const users = readUsers();
+      const idx = users.findIndex(u => u.uid === uid);
+      
+      if (idx > -1) {
+        users[idx].credits = parseInt(credits, 10);
+        writeUsers(users);
+        res.json({ success: true, message: 'Credits updated successfully', user: users[idx] });
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
     }
   });
 

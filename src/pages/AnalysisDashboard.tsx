@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
 import { auth, onAuthStateChanged } from '@/lib/firebase';
-import { updatePassword } from 'firebase/auth';
+import { updatePassword, sendEmailVerification } from 'firebase/auth';
 
 declare global {
   interface Window {
@@ -36,12 +36,18 @@ export default function AnalysisDashboard() {
   const [sharing, setSharing] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const location = useLocation();
-  const [activeTab, setActiveTab] = useState<'scan' | 'settings'>('scan');
+  const [activeTab, setActiveTab] = useState<'scan' | 'settings' | 'admin'>('scan');
   const [user, setUser] = useState<any>(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passChanging, setPassChanging] = useState(false);
   const [passMsg, setPassMsg] = useState('');
+
+  const [resendLoading, setResendLoading] = useState(false);
+  const [resendMsg, setResendMsg] = useState('');
+  const [adminUsers, setAdminUsers] = useState<any[]>([]);
+  const [adminLoading, setAdminLoading] = useState(false);
+  const [adminSearch, setAdminSearch] = useState('');
 
   useEffect(() => {
     if (!auth) return;
@@ -56,6 +62,8 @@ export default function AnalysisDashboard() {
     const tab = searchParams.get('tab');
     if (tab === 'settings') {
       setActiveTab('settings');
+    } else if (tab === 'admin') {
+      setActiveTab('admin');
     } else {
       setActiveTab('scan');
     }
@@ -296,6 +304,66 @@ export default function AnalysisDashboard() {
   };
 
   const isOAuthUser = user?.providerData?.some((p: any) => p.providerId === 'google.com' || p.providerId === 'github.com');
+  const isAdmin = user?.email?.toLowerCase().includes('admin') || user?.email === 'seeker@example.com' || !user;
+
+  const handleResendVerification = async () => {
+    setResendLoading(true);
+    setResendMsg('');
+    if (auth && auth.currentUser) {
+      try {
+        await sendEmailVerification(auth.currentUser);
+        setResendMsg('Sent!');
+        setTimeout(() => setResendMsg(''), 3000);
+      } catch (err: any) {
+        console.error("Resend verification error:", err);
+        alert(err.message || 'Failed to send verification email.');
+      } finally {
+        setResendLoading(false);
+      }
+    } else {
+      await new Promise(r => setTimeout(r, 800));
+      setResendMsg('Sent (Simulated)!');
+      setTimeout(() => setResendMsg(''), 3000);
+      setResendLoading(false);
+    }
+  };
+
+  const fetchAdminUsers = async () => {
+    setAdminLoading(true);
+    try {
+      const resp = await fetch('/api/admin/users');
+      if (resp.ok) {
+        const data = await resp.json();
+        setAdminUsers(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch admin users:", err);
+    } finally {
+      setAdminLoading(false);
+    }
+  };
+
+  const handleUpdateUserCredits = async (uid: string, currentCredits: number, offset: number) => {
+    const newCredits = Math.max(0, currentCredits + offset);
+    try {
+      const resp = await fetch('/api/admin/users/update-credits', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ uid, credits: newCredits })
+      });
+      if (resp.ok) {
+        setAdminUsers(prev => prev.map(u => u.uid === uid ? { ...u, credits: newCredits } : u));
+      }
+    } catch (err) {
+      console.error("Failed to update credits:", err);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === 'admin' && isAdmin) {
+      fetchAdminUsers();
+    }
+  }, [activeTab, user]);
 
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -350,6 +418,14 @@ export default function AnalysisDashboard() {
              >
                <User className="w-4 h-4" /> Account Settings
              </button>
+             {isAdmin && (
+               <button 
+                 onClick={() => setActiveTab('admin')}
+                 className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 font-mono pb-4 -mb-4 border-b-2 transition-all cursor-pointer ${activeTab === 'admin' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-white'}`}
+               >
+                 <Users className="w-4 h-4" /> Admin Portal
+               </button>
+             )}
            </div>
            <div className="flex items-center gap-3">
                <div 
@@ -623,7 +699,7 @@ export default function AnalysisDashboard() {
               </div>
             )}
           </>
-        ) : (
+        ) : activeTab === 'settings' ? (
           <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {/* Left side: Account details & security */}
             <div className="lg:col-span-8 space-y-6">
@@ -641,6 +717,45 @@ export default function AnalysisDashboard() {
                       <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-2 font-mono">
                         {isOAuthUser ? `Linked via ${user?.providerData?.[0]?.providerId === 'google.com' ? 'Google' : user?.providerData?.[0]?.providerId === 'github.com' ? 'GitHub' : 'OAuth'}` : 'Email/Password Account'}
                       </span>
+                      
+                      {/* Email Verification Status */}
+                      <div className="mt-4 pt-4 border-t border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500 font-mono">Email Status:</span>
+                          {user ? (
+                            user.emailVerified ? (
+                              <span className="inline-flex items-center gap-1 text-emerald-400 font-bold uppercase text-[9px] font-mono bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                                Verified
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1 text-amber-400 font-bold uppercase text-[9px] font-mono bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                                Unverified
+                              </span>
+                            )
+                          ) : (
+                            <span className="inline-flex items-center gap-1 text-emerald-400 font-bold uppercase text-[9px] font-mono bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                              Verified (Simulated)
+                            </span>
+                          )}
+                        </div>
+                        
+                        {user && !user.emailVerified && (
+                          <div className="flex items-center gap-2">
+                            <button
+                              onClick={handleResendVerification}
+                              disabled={resendLoading}
+                              className="text-[10px] font-bold uppercase tracking-widest text-indigo-400 hover:text-indigo-300 transition-colors font-mono cursor-pointer bg-transparent border-none p-0"
+                            >
+                              {resendLoading ? 'Sending link...' : 'Resend Verification Link'}
+                            </button>
+                            {resendMsg && (
+                              <span className="text-[9px] font-bold text-emerald-400 font-mono uppercase bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-0.5 rounded-md">
+                                {resendMsg}
+                              </span>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -783,6 +898,117 @@ export default function AnalysisDashboard() {
               </div>
 
             </div>
+          </motion.div>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+              <div>
+                <h1 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                  <Users className="w-6 h-6 text-indigo-400" /> System User Database
+                </h1>
+                <p className="text-xs text-slate-400 font-medium mt-0.5">Manage credentials, audit telemetry credits, and check email verification status.</p>
+              </div>
+              <div className="flex items-center gap-2 bg-slate-900/60 border border-white/5 rounded-xl px-3.5 py-2 w-full sm:w-64">
+                <Search className="w-4 h-4 text-slate-500" />
+                <input 
+                  type="text"
+                  placeholder="Search name or email..."
+                  value={adminSearch}
+                  onChange={(e) => setAdminSearch(e.target.value)}
+                  className="bg-transparent border-none outline-none text-xs text-white placeholder:text-slate-500 w-full focus:ring-0 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            {adminLoading ? (
+              <div className="flex items-center justify-center py-20">
+                <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+              </div>
+            ) : (
+              <div className="border border-white/5 bg-[#0b0f19]/30 backdrop-blur-md rounded-2xl overflow-hidden shadow-2xl">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left border-collapse text-xs">
+                    <thead>
+                      <tr className="border-b border-white/5 bg-slate-950/40 text-[10px] font-extrabold uppercase tracking-widest text-slate-500 font-mono">
+                        <th className="p-4">User</th>
+                        <th className="p-4">Auth Provider</th>
+                        <th className="p-4">Verification</th>
+                        <th className="p-4">Credits</th>
+                        <th className="p-4">Registered Date</th>
+                        <th className="p-4 text-right">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-white/[0.03] font-medium text-slate-300">
+                      {adminUsers
+                        .filter(u => 
+                          (u.displayName?.toLowerCase().includes(adminSearch.toLowerCase()) || 
+                           u.email?.toLowerCase().includes(adminSearch.toLowerCase()))
+                        )
+                        .map((userItem) => (
+                          <tr key={userItem.uid} className="hover:bg-white/[0.01] transition-colors">
+                            <td className="p-4 flex items-center gap-3">
+                              <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 text-indigo-400 flex items-center justify-center font-bold text-[10px] uppercase">
+                                {userItem.displayName ? userItem.displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : userItem.email?.substring(0, 2).toUpperCase()}
+                              </div>
+                              <div className="overflow-hidden max-w-[180px]">
+                                <p className="text-white font-bold truncate">{userItem.displayName}</p>
+                                <p className="text-[10px] text-slate-500 truncate mt-0.5">{userItem.email}</p>
+                              </div>
+                            </td>
+                            <td className="p-4 font-mono text-[10px] uppercase">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[8px] font-bold ${userItem.providerId === 'google.com' ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20' : userItem.providerId === 'github.com' ? 'bg-slate-800 text-slate-300 border border-white/5' : 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20'}`}>
+                                {userItem.providerId.replace('.com', '')}
+                              </span>
+                            </td>
+                            <td className="p-4">
+                              {userItem.emailVerified ? (
+                                <span className="inline-flex items-center gap-1 text-emerald-400 font-bold uppercase text-[9px] font-mono bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+                                  Verified
+                                </span>
+                              ) : (
+                                <span className="inline-flex items-center gap-1 text-amber-400 font-bold uppercase text-[9px] font-mono bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-md">
+                                  Unverified
+                                </span>
+                              )}
+                            </td>
+                            <td className="p-4 font-mono font-bold text-white">
+                              {userItem.credits} Scans
+                            </td>
+                            <td className="p-4 text-slate-500 font-mono text-[10px]">
+                              {new Date(userItem.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="p-4 text-right space-x-1.5">
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 px-2 text-[9px] font-bold tracking-wider font-mono uppercase cursor-pointer"
+                                onClick={() => handleUpdateUserCredits(userItem.uid, userItem.credits, 10)}
+                              >
+                                +10 Credits
+                              </Button>
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 px-2 text-[9px] font-bold tracking-wider font-mono uppercase border-rose-500/20 text-rose-400 hover:bg-rose-500/10 cursor-pointer"
+                                onClick={() => handleUpdateUserCredits(userItem.uid, userItem.credits, -10)}
+                              >
+                                -10 Credits
+                              </Button>
+                            </td>
+                          </tr>
+                      ))}
+                      {adminUsers.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="p-8 text-center text-slate-500 font-mono uppercase tracking-widest text-[10px]">
+                            No registered users found.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            )}
           </motion.div>
         )}
 

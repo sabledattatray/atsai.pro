@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
 import { auth, googleProvider, githubProvider, signInWithPopup } from '@/lib/firebase';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { Loader2, AlertCircle } from 'lucide-react';
 
 export default function SignUpPage() {
@@ -33,6 +33,12 @@ export default function SignUpPage() {
       try {
         const result = await createUserWithEmailAndPassword(auth, email, password);
         await updateProfile(result.user, { displayName: name });
+        try {
+          await sendEmailVerification(result.user);
+          console.log("Verification email sent.");
+        } catch (verErr) {
+          console.error("Failed to send verification email:", verErr);
+        }
         console.log("Email Sign-Up success:", result.user);
         navigate('/app');
       } catch (err: any) {

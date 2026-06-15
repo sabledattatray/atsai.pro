@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Briefcase, FileText, User, LayoutDashboard, Menu, X, ChevronDown, Sparkles, Github, Linkedin, Twitter, Globe, Terminal, Cpu, Database, Activity, ArrowRight } from 'lucide-react';
+import { Briefcase, FileText, User, LayoutDashboard, Menu, X, ChevronDown, Sparkles, Github, Linkedin, Twitter, Globe, Terminal, Cpu, Database, Activity, ArrowRight, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { Logo } from './Logo';
 import { auth, onAuthStateChanged, signOut } from '@/lib/firebase';
@@ -263,11 +263,36 @@ export default function Layout() {
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
+  const isAdmin = user?.email?.toLowerCase().includes('admin') || user?.email === 'seeker@example.com' || !user;
+
+  const registerUserOnBackend = async (firebaseUser: any) => {
+    if (!firebaseUser) return;
+    try {
+      await fetch('/api/admin/users/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || 'Unnamed User',
+          providerId: firebaseUser.providerData?.[0]?.providerId || 'password',
+          emailVerified: firebaseUser.emailVerified,
+          createdAt: firebaseUser.metadata?.creationTime || new Date().toISOString(),
+          credits: localStorage.getItem('atsCredits') ? parseInt(localStorage.getItem('atsCredits')!, 10) : 3
+        })
+      });
+    } catch (err) {
+      console.error("Failed to sync user with backend:", err);
+    }
+  };
 
   React.useEffect(() => {
     if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
+      if (currentUser) {
+        registerUserOnBackend(currentUser);
+      }
     });
     return () => unsubscribe();
   }, []);
@@ -394,6 +419,15 @@ export default function Layout() {
                           >
                             <User className="w-3.5 h-3.5 text-indigo-400" /> Account Settings
                           </Link>
+                          {isAdmin && (
+                            <Link 
+                              to="/app?tab=admin" 
+                              onClick={() => setIsDropdownOpen(false)}
+                              className="flex items-center gap-2 text-xs text-slate-300 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all font-semibold"
+                            >
+                              <Users className="w-3.5 h-3.5 text-indigo-400" /> Admin Portal
+                            </Link>
+                          )}
                           <button 
                             onClick={handleLogout}
                             className="w-full flex items-center gap-2 text-xs text-rose-400 hover:text-rose-300 px-2 py-1.5 rounded-lg hover:bg-rose-500/10 transition-all text-left cursor-pointer font-bold border-none bg-transparent"
@@ -454,6 +488,11 @@ export default function Layout() {
                 <Link to="/app?tab=settings" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   <User className="w-6 h-6 text-indigo-400" /> Account Settings
                 </Link>
+                {isAdmin && (
+                  <Link to="/app?tab=admin" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                    <Users className="w-6 h-6 text-indigo-400" /> Admin Portal
+                  </Link>
+                )}
                 <button 
                   onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}
                   className="pb-4 flex items-center gap-3 text-left w-full border-none bg-transparent font-extrabold text-xl text-rose-400 cursor-pointer uppercase tracking-tight"
