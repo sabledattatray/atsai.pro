@@ -6,7 +6,7 @@ Resume Copilot AI is an advanced, automated Resume Parsing, ATS (Applicant Track
 
 It now features a comprehensive **Firebase Authentication Suite** (Google, GitHub, and Email/Password), an **Email Verification Gate** (blocking unverified accounts), a **Local User Database** (`users.json`), and a **System Admin Portal** for managing user credit balances.
 
-**Live Demo**: [resumecopilotai.vercel.app](https://resumecopilotai.vercel.app)
+**Live Demo**: [cvwithcopilot.vercel.app](https://cvwithcopilot.vercel.app)
 
 ---
 

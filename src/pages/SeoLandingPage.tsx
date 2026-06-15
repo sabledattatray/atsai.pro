@@ -2,13 +2,25 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { FileText, ArrowRight, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
 import { Logo } from '@/components/Logo';
+import { useSEO } from '../utils/useSEO';
 
 export default function SeoLandingPage() {
   const { slug } = useParams();
   
+  const cleanTitle = (slug || '')
+    .split('-')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
   const formattedSlug = slug?.replace(/_/g, ' ') || 'Resume Analyzer';
+
+  useSEO({
+    title: `${cleanTitle || 'ATS Resume Checker'} | Resume Copilot AI`,
+    description: `Optimize your resume for ${cleanTitle || 'your next job'}. Run our semantic AI scan to detect missing skills and check ATS keyword compatibility.`,
+    keywords: `ats resume checker, resume score, ${slug?.replace(/-/g, ', ') || 'resume optimizer'}, career intelligence, resume builder`,
+    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+  });
   
   return (
     <div className="min-h-screen bg-white">

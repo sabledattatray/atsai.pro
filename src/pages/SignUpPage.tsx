@@ -5,8 +5,16 @@ import { Logo } from '@/components/Logo';
 import { auth, googleProvider, githubProvider, signInWithPopup } from '@/lib/firebase';
 import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { useSEO } from '../utils/useSEO';
 
 export default function SignUpPage() {
+  useSEO({
+    title: 'Sign Up & Get Started - Resume Copilot AI',
+    description: 'Create your free account on Resume Copilot AI. Get 3 free scans immediately to test your ATS resume score, audit skill gaps, and optimize formatting.',
+    keywords: 'register resume builder, free resume account, join resume checker',
+    ogImage: 'https://cvwithcopilot.vercel.app/signin_page.png'
+  });
+
   const navigate = useNavigate();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');

@@ -1,0 +1,23 @@
+User-agent: *
+Allow: /
+Allow: /pricing
+Allow: /features
+Allow: /templates
+Allow: /about
+Allow: /cover-letter-builder
+Allow: /linkedin-optimizer
+Allow: /career-hub
+Allow: /interview-guides
+Allow: /seo/
+Allow: /cover-letters/
+
+# Disallow routes behind login or session gates
+Disallow: /app
+Disallow: /app/
+Disallow: /editor
+Disallow: /editor/
+Disallow: /signin
+Disallow: /signup
+Disallow: /share/
+
+Sitemap: https://cvwithcopilot.vercel.app/sitemap.xml

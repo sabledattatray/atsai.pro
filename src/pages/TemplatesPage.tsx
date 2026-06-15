@@ -5,8 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { TechTemplate, ExecutiveTemplate, ModernTemplate, BusinessTemplate, CreativeTemplate, MinimalistTemplate, BoldTemplate, AcademicTemplate, StartupTemplate, InfographicTemplate } from './TemplateEditorPage';
 import { dummyResumes } from '@/lib/dummyResumes';
+import { useSEO } from '../utils/useSEO';
 
 export default function TemplatesPage() {
+  useSEO({
+    title: 'ATS-Friendly Resume Templates - Resume Copilot AI',
+    description: 'Get hired faster with recruiter-vetted, ATS-tested resume templates. 100% machine-readable formats optimized for Workday, Taleo, and Greenhouse parsers.',
+    keywords: 'ats resume templates, recruiter vetted resume, resume layout templates, download free resume format, resume templates list',
+    ogImage: 'https://cvwithcopilot.vercel.app/pricing_page.png'
+  });
+
   const [activeCategory, setActiveCategory] = React.useState('All');
   const [previewTheme, setPreviewTheme] = React.useState<'light' | 'dark'>('light');
   

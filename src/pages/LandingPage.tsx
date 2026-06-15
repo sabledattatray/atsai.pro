@@ -4,8 +4,16 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { coverLetterTemplates, categorizedCoverLetters, slugify } from '../data/coverLetters';
+import { useSEO } from '../utils/useSEO';
 
 export default function LandingPage() {
+  useSEO({
+    title: 'Resume Copilot - AI Career Intelligence & ATS Resume Checker',
+    description: 'Optimize your resume for any Applicant Tracking System (ATS). Resume Copilot uses AI to scan your resume against job descriptions, revealing skill gaps and helping you land more interviews.',
+    keywords: 'ATS resume checker, AI resume optimizer, resume analysis, job matching, applicant tracking system, resume keywords, career intelligence, resume builder, AI career coach, Workday ATS, Greenhouse ATS, Lever ATS',
+    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+  });
+
   const [searchTerm, setSearchTerm] = useState('');
   const [activeCategory, setActiveCategory] = useState<string>(categorizedCoverLetters[0].category);
   const [showAllTemplates, setShowAllTemplates] = useState(false);

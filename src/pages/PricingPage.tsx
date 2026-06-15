@@ -3,8 +3,16 @@ import { motion } from 'framer-motion';
 import { CheckCircle2, Star, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../utils/useSEO';
 
 export default function PricingPage() {
+  useSEO({
+    title: 'Pricing Plans - Resume Copilot AI',
+    description: 'Affordable plans for job seekers. Start scanning your resume for free, or buy credits to unlock advanced semantic matching, ATS keyword rewrites, and detailed skill gap analysis.',
+    keywords: 'resume score pricing, resume checker cost, ats scanner credits, free resume scan, resume builder pricing',
+    ogImage: 'https://cvwithcopilot.vercel.app/pricing_page.png'
+  });
+
   return (
     <div className="flex flex-col w-full min-h-[calc(100vh-80px)] py-24 px-4 bg-[#030712] text-slate-100 relative overflow-hidden">
       {/* Background Radial Glow */}

@@ -5,8 +5,16 @@ import { Logo } from '@/components/Logo';
 import { auth, googleProvider, githubProvider, signInWithPopup } from '@/lib/firebase';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Loader2, AlertCircle } from 'lucide-react';
+import { useSEO } from '../utils/useSEO';
 
 export default function SignInPage() {
+  useSEO({
+    title: 'Sign In - Resume Copilot AI',
+    description: 'Sign in to your Resume Copilot AI workspace. Manage your credit balances, view scans, edit resumes, and prepare for interviews.',
+    keywords: 'resume score sign in, sign in ats check, log in resume builder',
+    ogImage: 'https://cvwithcopilot.vercel.app/signin_page.png'
+  });
+
   const navigate = useNavigate();
   const [email, setEmail] = useState('seeker@example.com');
   const [password, setPassword] = useState('password123');

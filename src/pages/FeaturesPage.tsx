@@ -3,8 +3,15 @@ import { motion } from 'framer-motion';
 import { FileSearch, Target, Zap, Server, Edit3, ShieldCheck, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { useSEO } from '../utils/useSEO';
 
 export default function FeaturesPage() {
+  useSEO({
+    title: 'Resume Copilot Features - AI ATS Checker & Simulator',
+    description: 'Explore the features of Resume Copilot. Our platform offers enterprise ATS simulation, semantic skill matching, AI bullet point rewrites, gap priority diagnostics, and PDF formatting checks.',
+    keywords: 'ats simulation, resume scanner features, ai bullet rewriter, semantic skill match, check resume formatting',
+    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+  });
   const containerVariants = {
     hidden: {},
     visible: {

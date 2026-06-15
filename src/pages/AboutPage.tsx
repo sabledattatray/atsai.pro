@@ -1,6 +1,13 @@
 import React from 'react';
+import { useSEO } from '../utils/useSEO';
 
 export default function AboutPage() {
+  useSEO({
+    title: 'About Us - Resume Copilot AI',
+    description: 'Learn about our mission to level the playing field for job seekers by reverse-engineering enterprise ATS filters and leveraging semantic AI analysis.',
+    keywords: 'about resume copilot, ats resume engine mission, developer resume optimization tech',
+    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+  });
   return (
     <div className="flex flex-col w-full min-h-[calc(100vh-80px)] bg-white text-black py-24 px-4">
       <div className="container mx-auto max-w-3xl">
