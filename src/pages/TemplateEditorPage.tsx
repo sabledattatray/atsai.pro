@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useSearchParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Download, ArrowLeft, Wand2, Upload, FileText, LayoutTemplate, Palette, Sparkles, CheckCircle2, FileUp } from 'lucide-react';
+import { Download, ArrowLeft, Wand2, Upload, FileText, LayoutTemplate, Palette, Sparkles, CheckCircle2, FileUp, Sun, Moon } from 'lucide-react';
 import { dummyResumes } from '@/lib/dummyResumes';
 import domtoimage from 'dom-to-image-more';
 import { jsPDF } from 'jspdf';
@@ -10,6 +10,7 @@ export default function TemplateEditorPage() {
   const [searchParams] = useSearchParams();
   const initialCategory = searchParams.get('template') || 'tech';
   const initialRole = searchParams.get('role') || 'Software Engineer';
+  const initialTheme = (searchParams.get('theme') || 'light') as 'light' | 'dark';
   
   const [activeTab, setActiveTab] = useState<'content' | 'design' | 'templates' | 'ai'>('content');
   
@@ -19,6 +20,7 @@ export default function TemplateEditorPage() {
   const [fontSize, setFontSize] = useState('text-sm');
   const [pageSize, setPageSize] = useState('a4');
   const [spacing, setSpacing] = useState('normal'); // compact, normal, relaxed
+  const [resumeTheme, setResumeTheme] = useState<'light' | 'dark'>(initialTheme);
   
   const [selectedTemplate, setSelectedTemplate] = useState(initialCategory);
 
@@ -69,6 +71,12 @@ export default function TemplateEditorPage() {
         quality: 1.0,
         height: targetHeight * scale,
         width: targetWidth * scale,
+        filter: (node: any) => {
+          if (node.classList && node.classList.contains('pdf-exclude')) {
+            return false;
+          }
+          return true;
+        },
         style: {
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
@@ -86,9 +94,26 @@ export default function TemplateEditorPage() {
       });
       
       const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (targetHeight * pdfWidth) / targetWidth;
+      const pageHeight = pdf.internal.pageSize.getHeight();
       
-      pdf.addImage(dataUrl, 'JPEG', 0, 0, pdfWidth, pdfHeight);
+      const imgWidth = pdfWidth;
+      const imgHeight = (targetHeight * pdfWidth) / targetWidth;
+      
+      let heightLeft = imgHeight;
+      let position = 0;
+      
+      // Page 1
+      pdf.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+      
+      // Subsequent pages if height overflows
+      while (heightLeft > 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      
       pdf.save(`${resumeData.name?.replace(/\s+/g, '_') || 'Resume'}.pdf`);
     } catch (e) {
       console.error('Error generating PDF:', e);
@@ -155,7 +180,7 @@ export default function TemplateEditorPage() {
   const paddingClass = spacing === 'compact' ? 'p-6' : spacing === 'relaxed' ? 'p-16' : 'p-10';
 
   return (
-    <div className="flex flex-col w-full h-[calc(100vh)] bg-[#f3f4f6] print:bg-white print:h-auto print:block font-sans overflow-hidden print:overflow-visible">
+    <div className={`flex flex-col w-full h-[calc(100vh)] bg-[#f3f4f6] print:bg-white print:h-auto print:block font-sans overflow-hidden print:overflow-visible ${resumeTheme === 'dark' ? 'editor-theme-dark' : ''}`}>
       {/* Top Navbar */}
       <div className="flex justify-between items-center bg-white border-b border-gray-200 px-6 py-3 print:hidden z-10 shrink-0 shadow-sm">
         <div className="flex items-center gap-4">
@@ -167,6 +192,23 @@ export default function TemplateEditorPage() {
               <span className="bg-indigo-100 text-indigo-700 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded">Beta</span>
           </div>
         </div>
+
+        {/* Quick theme toggler inside the top header */}
+        <div className="flex bg-gray-100 p-0.5 rounded-lg border border-gray-200">
+           <button 
+             onClick={() => setResumeTheme('light')} 
+             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${resumeTheme === 'light' ? 'bg-white shadow text-indigo-600 font-bold' : 'text-gray-500 hover:text-gray-800'}`}
+           >
+              <Sun className="w-3.5 h-3.5" /> Light
+           </button>
+           <button 
+             onClick={() => setResumeTheme('dark')} 
+             className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${resumeTheme === 'dark' ? 'bg-white shadow text-indigo-600 font-bold' : 'text-gray-500 hover:text-gray-800'}`}
+           >
+              <Moon className="w-3.5 h-3.5" /> Dark
+           </button>
+        </div>
+
         <div className="flex items-center gap-3">
           <Button variant="outline" className="border-indigo-200 text-indigo-700 hover:bg-indigo-50" onClick={handleImport}>
              <FileUp className="w-4 h-4 mr-2" /> Import Existing Resume
@@ -414,6 +456,26 @@ export default function TemplateEditorPage() {
                  <div className="h-px bg-gray-100 w-full" />
 
                  <div>
+                    <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-3">Resume Theme</h3>
+                    <div className="grid grid-cols-2 gap-2 border border-gray-200 rounded-lg bg-gray-50 p-1">
+                       <button 
+                         onClick={() => setResumeTheme('light')} 
+                         className={`px-4 py-2.5 rounded-md text-xs font-bold uppercase flex justify-center items-center gap-2 cursor-pointer transition-all ${resumeTheme === 'light' ? 'bg-white shadow border border-gray-200 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                       >
+                          <Sun className="w-4 h-4" /> Light Theme
+                       </button>
+                       <button 
+                         onClick={() => setResumeTheme('dark')} 
+                         className={`px-4 py-2.5 rounded-md text-xs font-bold uppercase flex justify-center items-center gap-2 cursor-pointer transition-all ${resumeTheme === 'dark' ? 'bg-white shadow border border-gray-200 text-indigo-600' : 'text-gray-500 hover:bg-gray-100'}`}
+                       >
+                          <Moon className="w-4 h-4" /> Dark Theme
+                       </button>
+                    </div>
+                 </div>
+
+                 <div className="h-px bg-gray-100 w-full" />
+
+                 <div>
                     <h3 className="text-xs font-bold text-gray-900 uppercase tracking-widest mb-3">Typography</h3>
                     <div className="grid grid-cols-1 gap-2 border border-gray-200 rounded-lg bg-gray-50 p-1">
                        <button onClick={() => setFontFamily('font-sans')} className={`px-4 py-3 rounded-md text-sm font-sans flex justify-between items-center ${fontFamily === 'font-sans' ? 'bg-white shadow border border-gray-200 font-bold' : 'text-gray-600 hover:bg-gray-100'}`}>
@@ -525,28 +587,36 @@ export default function TemplateEditorPage() {
           <div 
              ref={pdfRef}
              id="pdf-content"
-             className={`bg-white shadow-[0_10px_40px_rgba(0,0,0,0.15)] origin-top mx-auto print:shadow-none print:mx-0 transition-all duration-300 ${pageSize === 'a4' ? 'w-[210mm] min-h-[297mm]' : 'w-[8.5in] min-h-[11in]'} ${fontFamily} ${fontSize}`}
+             className={`relative ${resumeTheme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-900'} shadow-[0_10px_40px_rgba(0,0,0,0.15)] origin-top mx-auto print:shadow-none print:mx-0 transition-all duration-300 ${pageSize === 'a4' ? 'w-[210mm] min-h-[297mm]' : 'w-[8.5in] min-h-[11in]'} ${fontFamily} ${fontSize}`}
           >
+             {/* Visual Page Break Indicators */}
+             <div className="pdf-exclude absolute left-0 right-0 border-t border-dashed border-red-500/50 z-30 pointer-events-none" style={{ top: pageSize === 'a4' ? '1123px' : '1056px' }}>
+               <span className="absolute right-4 -top-2 bg-red-500/10 text-red-400 text-[9px] font-bold px-2 py-0.5 rounded border border-red-500/20 backdrop-blur-sm">Page 1 Break</span>
+             </div>
+             <div className="pdf-exclude absolute left-0 right-0 border-t border-dashed border-red-500/50 z-30 pointer-events-none" style={{ top: pageSize === 'a4' ? '2246px' : '2112px' }}>
+               <span className="absolute right-4 -top-2 bg-red-500/10 text-red-400 text-[9px] font-bold px-2 py-0.5 rounded border border-red-500/20 backdrop-blur-sm">Page 2 Break</span>
+             </div>
+
              {selectedTemplate === 'modern' ? (
-               <ModernTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <ModernTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'executive' ? (
-               <ExecutiveTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <ExecutiveTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'business' ? (
-               <BusinessTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <BusinessTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'creative' ? (
-               <CreativeTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <CreativeTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'minimalist' ? (
-               <MinimalistTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <MinimalistTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'bold' ? (
-               <BoldTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <BoldTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'academic' ? (
-               <AcademicTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <AcademicTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'startup' ? (
-               <StartupTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <StartupTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : selectedTemplate === 'infographic' ? (
-               <InfographicTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <InfographicTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              ) : (
-               <TechTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} />
+               <TechTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
              )}
           </div>
         </div>
@@ -569,15 +639,16 @@ const getBgColorClass = (colorName: string) => `bg-${colorName}-700`;
 
 // ----- TEMPLATES -----
 
-export function TechTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function TechTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`${paddingClass} bg-white text-gray-900 border-t-8 h-full flex flex-col`} style={{ borderColor: primaryColor }}>
-      <div className="border-b pb-6 mb-6 text-center" style={{ borderBottomColor: `${primaryColor}40` }}>
+    <div className={`${paddingClass} ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-900'} border-t-8 h-full flex flex-col`} style={{ borderColor: primaryColor }}>
+      <div className="border-b pb-6 mb-6 text-center" style={{ borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}40` }}>
         {data.photo && <img src={data.photo} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover border-4" style={{ borderColor: primaryColor }} />}
         <h1 className="text-4xl font-extrabold tracking-tight mb-2 uppercase whitespace-nowrap" style={{ color: primaryColor }}>{data.name}</h1>
-        <p className="text-lg font-medium mb-3 text-gray-600">{data.title}</p>
-        <div className="flex justify-center gap-4 text-gray-500 font-medium text-[0.85em]">
+        <p className={`text-lg font-medium mb-3 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>{data.title}</p>
+        <div className={`flex justify-center gap-4 ${isDark ? 'text-slate-400' : 'text-gray-500'} font-medium text-[0.85em]`}>
            <span>{data.email}</span>
            <span>•</span>
            <span>{data.phone}</span>
@@ -585,57 +656,58 @@ export function TechTemplate({ data, color, spacingClass, paddingClass }: any) {
       </div>
       
       <div className="mb-6">
-         <p className="leading-relaxed text-gray-700 text-[0.95em]">{data.summary}</p>
+         <p className={`leading-relaxed ${isDark ? 'text-slate-350' : 'text-gray-700'} text-[0.95em]`}>{data.summary}</p>
       </div>
 
       <div className="mb-8">
-        <h2 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-widest" style={{ borderBottomColor: `${primaryColor}40`, color: primaryColor }}>Experience</h2>
+        <h2 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-widest" style={{ borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}40`, color: primaryColor }}>Experience</h2>
         <div className={spacingClass}>
           {data.experience.map((exp: any, i: number) => (
             <div key={i}>
               <div className="flex justify-between items-end mb-1">
-                 <h3 className="font-bold text-gray-900 text-[1.1em]">{exp.company}</h3>
-                 <span className="font-bold text-gray-500 uppercase tracking-wider text-[0.8em]">{exp.duration}</span>
+                 <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} text-[1.1em]`}>{exp.company}</h3>
+                 <span className={`font-bold ${isDark ? 'text-slate-500' : 'text-gray-500'} uppercase tracking-wider text-[0.8em]`}>{exp.duration}</span>
               </div>
               <p className="font-bold mb-2 text-[0.95em]" style={{ color: primaryColor }}>{exp.role}</p>
-              <p className="text-gray-700 leading-relaxed text-[0.95em] whitespace-pre-wrap">{exp.description}</p>
+              <p className={`${isDark ? 'text-slate-350' : 'text-gray-700'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
             </div>
           ))}
         </div>
       </div>
 
       <div className="mb-8">
-        <h2 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-widest" style={{ borderBottomColor: `${primaryColor}40`, color: primaryColor }}>Education</h2>
+        <h2 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-widest" style={{ borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}40`, color: primaryColor }}>Education</h2>
         <div className={spacingClass}>
           {data.education.map((edu: any, i: number) => (
             <div key={i} className="flex justify-between items-end">
               <div>
-                 <h3 className="font-bold text-gray-900 text-[1.1em]">{edu.institution}</h3>
-                 <p className="text-gray-700 text-[0.95em]">{edu.degree}</p>
+                 <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} text-[1.1em]`}>{edu.institution}</h3>
+                 <p className={`${isDark ? 'text-slate-400' : 'text-gray-700'} text-[0.95em]`}>{edu.degree}</p>
               </div>
-              <span className="font-bold text-gray-500 uppercase tracking-wider text-[0.8em]">{edu.year}</span>
+              <span className={`font-bold ${isDark ? 'text-slate-500' : 'text-gray-500'} uppercase tracking-wider text-[0.8em]`}>{edu.year}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div>
-        <h2 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-widest" style={{ borderBottomColor: `${primaryColor}40`, color: primaryColor }}>Skills</h2>
-        <p className="text-gray-700 leading-relaxed text-[0.95em]">{data.skills}</p>
+        <h2 className="text-lg font-bold border-b pb-1 mb-4 uppercase tracking-widest" style={{ borderBottomColor: isDark ? 'rgba(255,255,255,0.1)' : `${primaryColor}40`, color: primaryColor }}>Skills</h2>
+        <p className={`${isDark ? 'text-slate-350' : 'text-gray-700'} leading-relaxed text-[0.95em]`}>{data.skills}</p>
       </div>
     </div>
   );
 }
 
-export function ExecutiveTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function ExecutiveTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`${paddingClass} text-slate-900 bg-white h-full flex flex-col`}>
+    <div className={`${paddingClass} ${isDark ? 'bg-slate-950 text-slate-100' : 'text-slate-900 bg-white'} h-full flex flex-col`}>
       <div className="text-center mb-8 pb-6 relative">
         {data.photo && <img src={data.photo} alt="Profile" className="w-24 h-24 rounded-full mx-auto mb-4 object-cover grayscale border-2 border-slate-200" />}
         <div className="absolute bottom-0 left-1/4 right-1/4 h-px" style={{ backgroundColor: primaryColor }}></div>
         <h1 className="text-3xl font-black mb-2 tracking-wide uppercase whitespace-nowrap">{data.name}</h1>
-        <p className="text-lg mb-4 text-slate-600 italic">{data.title}</p>
+        <p className={`text-lg mb-4 ${isDark ? 'text-slate-400' : 'text-slate-600'} italic`}>{data.title}</p>
         <div className="flex justify-center gap-4 text-[0.8em] tracking-widest font-bold uppercase" style={{ color: primaryColor }}>
            <span>{data.email}</span>
            <span>|</span>
@@ -645,60 +717,61 @@ export function ExecutiveTemplate({ data, color, spacingClass, paddingClass }: a
       
       <div className="mb-8 relative">
          <h2 className="text-[0.85em] font-black uppercase tracking-[0.2em] mb-4 text-center" style={{ color: primaryColor }}>Professional Summary</h2>
-         <p className="leading-relaxed text-slate-700 text-center text-[0.95em] px-8">{data.summary}</p>
+         <p className={`leading-relaxed ${isDark ? 'text-slate-300' : 'text-slate-700'} text-center text-[0.95em] px-8`}>{data.summary}</p>
       </div>
 
       <div className="mb-8">
-        <h2 className="text-[0.85em] font-black uppercase tracking-[0.2em] mb-4 border-b border-slate-200 pb-2 flex items-center gap-4">
+        <h2 className="text-[0.85em] font-black uppercase tracking-[0.2em] mb-4 border-b pb-2 flex items-center gap-4" style={{ borderColor: isDark ? 'rgba(255,255,255,0.1)' : '#e2e8f0' }}>
            <span style={{ color: primaryColor }}>Experience</span>
-           <div className="flex-1 h-px bg-slate-100"></div>
+           <div className={`flex-1 h-px ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}></div>
         </h2>
         <div className={spacingClass}>
           {data.experience.map((exp: any, i: number) => (
             <div key={i}>
               <div className="flex justify-between items-end mb-1">
-                 <h3 className="font-bold text-slate-900 text-[1.1em]">{exp.company}</h3>
-                 <span className="text-[0.85em] text-slate-500 font-bold uppercase">{exp.duration}</span>
+                 <h3 className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'} text-[1.1em]`}>{exp.company}</h3>
+                 <span className={`text-[0.85em] ${isDark ? 'text-slate-500' : 'text-slate-500'} font-bold uppercase`}>{exp.duration}</span>
               </div>
-              <p className="italic text-slate-600 mb-2 text-[0.95em]">{exp.role}</p>
-              <p className="text-slate-700 leading-relaxed text-[0.95em] whitespace-pre-wrap">{exp.description}</p>
+              <p className={`italic ${isDark ? 'text-slate-400' : 'text-slate-600'} mb-2 text-[0.95em]`}>{exp.role}</p>
+              <p className={`${isDark ? 'text-slate-300' : 'text-slate-700'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="mb-8 pb-8 border-b border-slate-200">
+      <div className={`mb-8 pb-8 border-b ${isDark ? 'border-slate-800' : 'border-slate-200'}`}>
         <h2 className="text-[0.85em] font-black uppercase tracking-[0.2em] mb-4 flex items-center gap-4">
            <span style={{ color: primaryColor }}>Education</span>
-           <div className="flex-1 h-px bg-slate-100"></div>
+           <div className={`flex-1 h-px ${isDark ? 'bg-slate-800' : 'bg-slate-100'}`}></div>
         </h2>
         <div className={spacingClass}>
           {data.education.map((edu: any, i: number) => (
             <div key={i} className="flex justify-between items-center">
               <div>
-                 <h3 className="font-bold text-slate-900 text-[1.05em]">{edu.institution}</h3>
-                 <p className="italic text-slate-600 text-[0.95em]">{edu.degree}</p>
+                 <h3 className={`font-bold ${isDark ? 'text-white' : 'text-slate-900'} text-[1.05em]`}>{edu.institution}</h3>
+                 <p className={`italic ${isDark ? 'text-slate-400' : 'text-slate-600'} text-[0.95em]`}>{edu.degree}</p>
               </div>
-              <span className="text-[0.85em] text-slate-500 font-bold uppercase">{edu.year}</span>
+              <span className={`text-[0.85em] ${isDark ? 'text-slate-500' : 'text-slate-500'} font-bold uppercase`}>{edu.year}</span>
             </div>
           ))}
         </div>
       </div>
 
       <div className="text-center">
-        <h2 className="text-[0.8em] font-black uppercase tracking-[0.2em] mb-3 text-slate-500">Core Competencies</h2>
-        <p className="text-[0.95em] text-slate-800 font-medium leading-relaxed max-w-2xl mx-auto">{data.skills.split(',').join(' • ')}</p>
+        <h2 className={`text-[0.8em] font-black uppercase tracking-[0.2em] mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Core Competencies</h2>
+        <p className={`text-[0.95em] ${isDark ? 'text-slate-200' : 'text-slate-800'} font-medium leading-relaxed max-w-2xl mx-auto`}>{data.skills.split(',').join(' • ')}</p>
       </div>
     </div>
   );
 }
 
-export function ModernTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function ModernTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className="flex min-h-[min-content] h-full bg-white">
+    <div className={`flex min-h-[min-content] h-full ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-800'}`}>
       {/* Sidebar */}
-      <div className="w-[33%] text-white" style={{ backgroundColor: primaryColor }}>
+      <div className="w-[33%] text-white shrink-0" style={{ backgroundColor: primaryColor }}>
          <div className={paddingClass}>
              {data.photo && <img src={data.photo} alt="Profile" className="w-32 h-32 rounded-full mb-6 object-cover border-4 border-white/20 mx-auto" />}
              <h1 className="text-3xl font-light mb-2 leading-tight tracking-tight px-2">{data.name.split(' ')[0]} <br /><span className="font-bold">{data.name.split(' ').slice(1).join(' ')}</span></h1>
@@ -707,7 +780,7 @@ export function ModernTemplate({ data, color, spacingClass, paddingClass }: any)
              <div className="mb-10 text-[0.85em]">
                 <h2 className="text-white font-bold tracking-widest uppercase mb-4 opacity-50 px-2">Contact</h2>
                 <div className="space-y-3 px-2">
-                   <p className="font-medium bg-black/10 p-2 rounded">{data.email}</p>
+                   <p className="font-medium bg-black/10 p-2 rounded break-all">{data.email}</p>
                    <p className="font-medium bg-black/10 p-2 rounded">{data.phone}</p>
                 </div>
              </div>
@@ -735,13 +808,13 @@ export function ModernTemplate({ data, color, spacingClass, paddingClass }: any)
       </div>
 
       {/* Main Content */}
-      <div className="w-[67%] bg-white">
+      <div className={`w-[67%] ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-800'}`}>
          <div className={paddingClass}>
              <div className="mb-10">
                <h2 className="font-bold uppercase tracking-widest mb-4 flex items-center gap-3 text-[0.85em]" style={{ color: primaryColor }}>
                  <div className="w-10 h-0.5" style={{ backgroundColor: primaryColor }}></div> Core Profile
                </h2>
-               <p className="text-gray-600 leading-relaxed text-[0.95em]">{data.summary}</p>
+               <p className={`${isDark ? 'text-slate-300' : 'text-gray-650'} leading-relaxed text-[0.95em]`}>{data.summary}</p>
              </div>
 
              <div>
@@ -750,14 +823,14 @@ export function ModernTemplate({ data, color, spacingClass, paddingClass }: any)
                </h2>
                <div className={spacingClass}>
                  {data.experience.map((exp: any, i: number) => (
-                   <div key={i} className="relative pl-6 border-l-2 border-gray-100">
+                   <div key={i} className={`relative pl-6 border-l-2 ${isDark ? 'border-slate-800' : 'border-gray-100'}`}>
                      <div className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }}></div>
                      <div className="flex justify-between items-baseline mb-1">
-                        <h3 className="font-bold text-gray-900 text-[1.1em]">{exp.role}</h3>
-                        <span className="font-bold uppercase tracking-wider text-[0.75em] text-gray-500 bg-gray-100 px-2 py-1 rounded">{exp.duration}</span>
+                        <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} text-[1.1em]`}>{exp.role}</h3>
+                        <span className={`font-bold uppercase tracking-wider text-[0.75em] ${isDark ? 'text-slate-300 bg-slate-850' : 'text-gray-500 bg-gray-100'} px-2 py-1 rounded`}>{exp.duration}</span>
                      </div>
-                     <p className="font-bold text-gray-600 mb-3 text-[0.9em]">{exp.company}</p>
-                     <p className="text-gray-600 leading-relaxed text-[0.95em] whitespace-pre-wrap">{exp.description}</p>
+                     <p className={`font-bold ${isDark ? 'text-slate-450' : 'text-gray-600'} mb-3 text-[0.9em]`}>{exp.company}</p>
+                     <p className={`${isDark ? 'text-slate-300' : 'text-gray-650'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
                    </div>
                  ))}
                </div>
@@ -768,10 +841,11 @@ export function ModernTemplate({ data, color, spacingClass, paddingClass }: any)
   );
 }
 
-export function CreativeTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function CreativeTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`overflow-hidden h-full flex flex-col bg-white text-gray-800`}>
+    <div className={`overflow-hidden h-full flex flex-col ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-800'}`}>
       <div className={`pt-12 pb-8 px-12 relative`} style={{ backgroundColor: primaryColor, color: '#ffffff' }}>
          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -mr-20 -mt-20"></div>
          <div className="absolute bottom-0 left-10 w-40 h-40 bg-black/10 rounded-full blur-2xl -mb-10"></div>
@@ -791,7 +865,7 @@ export function CreativeTemplate({ data, color, spacingClass, paddingClass }: an
                <h2 className="text-lg font-bold uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color: primaryColor }}>
                  <span className="w-8 h-px bg-current"></span> Contact
                </h2>
-               <div className="space-y-3 text-sm font-medium text-gray-600">
+               <div className={`space-y-3 text-sm font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
                   <p>{data.email}</p>
                   <p>{data.phone}</p>
                </div>
@@ -818,8 +892,8 @@ export function CreativeTemplate({ data, color, spacingClass, paddingClass }: an
                  {data.education.map((edu: any, i: number) => (
                    <div key={i} className="relative pl-4 border-l-2" style={{ borderColor: `${primaryColor}40` }}>
                       <div className="absolute -left-[5px] top-1.5 w-2 h-2 rounded-full" style={{ backgroundColor: primaryColor }}></div>
-                      <p className="font-bold text-gray-900 leading-tight mb-1">{edu.degree}</p>
-                      <p className="text-gray-500 text-sm mb-1">{edu.institution}</p>
+                      <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} leading-tight mb-1`}>{edu.degree}</p>
+                      <p className={`${isDark ? 'text-slate-400' : 'text-gray-500'} text-sm mb-1`}>{edu.institution}</p>
                       <p className="text-xs font-bold uppercase tracking-wider" style={{ color: primaryColor }}>{edu.year}</p>
                    </div>
                  ))}
@@ -830,9 +904,9 @@ export function CreativeTemplate({ data, color, spacingClass, paddingClass }: an
          <div className="col-span-2 space-y-10">
             <div>
                <h2 className="text-lg font-bold uppercase tracking-widest mb-4 flex items-center gap-2" style={{ color: primaryColor }}>
-                 <span className="w-8 h-px bg-current"></span> Profil
+                 <span className="w-8 h-px bg-current"></span> Profile
                </h2>
-               <p className="text-gray-700 leading-relaxed text-[0.95em] whitespace-pre-wrap">{data.summary}</p>
+               <p className={`${isDark ? 'text-slate-300' : 'text-gray-700'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{data.summary}</p>
             </div>
 
             <div>
@@ -842,12 +916,12 @@ export function CreativeTemplate({ data, color, spacingClass, paddingClass }: an
                <div className={spacingClass}>
                  {data.experience.map((exp: any, i: number) => (
                    <div key={i} className="relative">
-                     <div className="flex items-baseline gap-4 mb-2">
-                        <h3 className="font-bold text-xl text-gray-900">{exp.company}</h3>
-                        <span className="text-sm font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: `${primaryColor}10`, color: primaryColor }}>{exp.duration}</span>
-                     </div>
-                     <p className="text-lg font-medium text-gray-600 mb-4">{exp.role}</p>
-                     <p className="text-gray-700 leading-relaxed text-[0.95em] whitespace-pre-wrap">{exp.description}</p>
+                      <div className="flex items-baseline gap-4 mb-2">
+                         <h3 className={`font-bold text-xl ${isDark ? 'text-white' : 'text-gray-900'}`}>{exp.company}</h3>
+                         <span className="text-sm font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: `${primaryColor}10`, color: primaryColor }}>{exp.duration}</span>
+                      </div>
+                      <p className={`text-lg font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'} mb-4`}>{exp.role}</p>
+                      <p className={`${isDark ? 'text-slate-300' : 'text-gray-700'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
                    </div>
                  ))}
                </div>
@@ -858,38 +932,39 @@ export function CreativeTemplate({ data, color, spacingClass, paddingClass }: an
   );
 }
 
-export function MinimalistTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function MinimalistTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`${paddingClass} text-zinc-900 bg-white h-full flex flex-col font-sans`}>
-      <div className="text-left mb-10 flex gap-8 items-start border-b border-zinc-100 pb-10">
+    <div className={`${paddingClass} ${isDark ? 'text-zinc-100 bg-zinc-950' : 'text-zinc-900 bg-white'} h-full flex flex-col font-sans`}>
+      <div className={`text-left mb-10 flex gap-8 items-start border-b ${isDark ? 'border-zinc-800' : 'border-zinc-100'} pb-10`}>
         {data.photo && <img src={data.photo} alt="Profile" className="w-32 h-32 rounded-full object-cover grayscale opacity-90 shadow-sm" />}
         <div>
           <h1 className="text-5xl font-light tracking-tighter mb-2 whitespace-nowrap">{data.name}</h1>
-          <p className="text-2xl text-zinc-500 tracking-wide mb-4 font-light">{data.title}</p>
-          <div className="flex gap-6 text-sm text-zinc-500 font-mono tracking-tight">
+          <p className={`text-2xl ${isDark ? 'text-zinc-400' : 'text-zinc-500'} tracking-wide mb-4 font-light`}>{data.title}</p>
+          <div className={`flex gap-6 text-sm ${isDark ? 'text-zinc-400' : 'text-zinc-500'} font-mono tracking-tight`}>
              <span>{data.email}</span>
              <span>{data.phone}</span>
           </div>
         </div>
       </div>
       
-      <div className="mb-10 text-lg text-zinc-700 leading-relaxed max-w-4xl font-light whitespace-pre-wrap">
+      <div className={`mb-10 text-lg ${isDark ? 'text-zinc-300' : 'text-zinc-700'} leading-relaxed max-w-4xl font-light whitespace-pre-wrap`}>
          {data.summary}
       </div>
 
       <div className="mb-10">
-        <h2 className="text-[0.8em] font-mono uppercase tracking-[0.2em] mb-6 text-zinc-400 border-b border-zinc-100 pb-2">Experience</h2>
+        <h2 className={`text-[0.8em] font-mono uppercase tracking-[0.2em] mb-6 ${isDark ? 'text-zinc-500 border-zinc-800' : 'text-zinc-400 border-zinc-100'} border-b pb-2`}>Experience</h2>
         <div className={spacingClass}>
           {data.experience.map((exp: any, i: number) => (
             <div key={i} className="grid grid-cols-4 gap-8">
-               <div className="col-span-1 border-r border-zinc-100 pr-4">
-                  <p className="font-medium text-zinc-900 mb-1">{exp.company}</p>
+               <div className={`col-span-1 border-r ${isDark ? 'border-zinc-800' : 'border-zinc-100'} pr-4`}>
+                  <p className={`font-medium ${isDark ? 'text-white' : 'text-zinc-900'} mb-1`}>{exp.company}</p>
                   <p className="text-xs text-zinc-400 font-mono mt-1">{exp.duration}</p>
                </div>
                <div className="col-span-3">
-                  <p className="text-lg font-medium text-zinc-800 mb-3">{exp.role}</p>
-                  <p className="text-zinc-600 leading-relaxed font-light text-[0.95em] whitespace-pre-wrap">{exp.description}</p>
+                  <p className={`text-lg font-medium ${isDark ? 'text-zinc-200' : 'text-zinc-800'} mb-3`}>{exp.role}</p>
+                  <p className={`${isDark ? 'text-zinc-400' : 'text-zinc-650'} leading-relaxed font-light text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
                </div>
             </div>
           ))}
@@ -898,20 +973,20 @@ export function MinimalistTemplate({ data, color, spacingClass, paddingClass }: 
 
       <div className="grid grid-cols-2 gap-8 mb-10">
          <div>
-            <h2 className="text-[0.8em] font-mono uppercase tracking-[0.2em] mb-6 text-zinc-400 border-b border-zinc-100 pb-2">Education</h2>
+            <h2 className={`text-[0.8em] font-mono uppercase tracking-[0.2em] mb-6 ${isDark ? 'text-zinc-500 border-zinc-800' : 'text-zinc-400 border-zinc-100'} border-b pb-2`}>Education</h2>
             <div className={spacingClass}>
               {data.education.map((edu: any, i: number) => (
                 <div key={i}>
-                   <p className="font-medium text-zinc-900 mb-1">{edu.degree}</p>
-                   <p className="text-zinc-500 text-sm">{edu.institution}</p>
+                   <p className={`font-medium ${isDark ? 'text-white' : 'text-zinc-900'} mb-1`}>{edu.degree}</p>
+                   <p className={`${isDark ? 'text-zinc-400' : 'text-zinc-505'} text-sm`}>{edu.institution}</p>
                    <p className="text-xs text-zinc-400 font-mono mt-1">{edu.year}</p>
                 </div>
               ))}
             </div>
          </div>
          <div>
-            <h2 className="text-[0.8em] font-mono uppercase tracking-[0.2em] mb-6 text-zinc-400 border-b border-zinc-100 pb-2">Skills</h2>
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-zinc-600 font-light">
+            <h2 className={`text-[0.8em] font-mono uppercase tracking-[0.2em] mb-6 ${isDark ? 'text-zinc-500 border-zinc-800' : 'text-zinc-400 border-zinc-100'} border-b pb-2`}>Skills</h2>
+            <div className={`flex flex-wrap gap-x-6 gap-y-2 text-sm ${isDark ? 'text-zinc-450' : 'text-zinc-600'} font-light`}>
                {data.skills.split(',').map((s: string, i: number) => (
                  <span key={i}>{s.trim()}</span>
                ))}
@@ -922,10 +997,11 @@ export function MinimalistTemplate({ data, color, spacingClass, paddingClass }: 
   );
 }
 
-export function BoldTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function BoldTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`overflow-hidden h-full flex flex-col bg-slate-50 text-slate-800`}>
+    <div className={`overflow-hidden h-full flex flex-col ${isDark ? 'bg-slate-950 text-slate-100' : 'bg-slate-50 text-slate-800'}`}>
       <div className={`pt-16 pb-12 ${paddingClass} relative bg-gray-900 text-white`}>
          <div className="flex justify-between items-center z-10 relative border-l-8 pl-6" style={{ borderColor: primaryColor }}>
             <div className="max-w-2xl">
@@ -943,27 +1019,27 @@ export function BoldTemplate({ data, color, spacingClass, paddingClass }: any) {
       <div className={`${paddingClass} flex-1 grid grid-cols-3 gap-12 mt-4`}>
          <div className="col-span-2 space-y-12">
             <div>
-               <h2 className="text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 text-gray-900 border-b-4 pb-2" style={{ borderColor: primaryColor }}>
+               <h2 className={`text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 ${isDark ? 'text-white border-slate-800' : 'text-gray-900 border-slate-200'} border-b-4 pb-2`} style={{ borderColor: primaryColor }}>
                  Summary
                </h2>
-               <p className="text-lg text-slate-700 leading-relaxed font-medium whitespace-pre-wrap">{data.summary}</p>
+               <p className={`text-lg ${isDark ? 'text-slate-300' : 'text-slate-700'} leading-relaxed font-medium whitespace-pre-wrap`}>{data.summary}</p>
             </div>
 
             <div>
-               <h2 className="text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 text-gray-900 border-b-4 pb-2" style={{ borderColor: primaryColor }}>
+               <h2 className={`text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 ${isDark ? 'text-white border-slate-800' : 'text-gray-900 border-slate-200'} border-b-4 pb-2`} style={{ borderColor: primaryColor }}>
                  Experience
                </h2>
                <div className={spacingClass}>
                  {data.experience.map((exp: any, i: number) => (
-                   <div key={i} className="bg-white p-6 rounded-xl shadow-sm border border-slate-100">
+                   <div key={i} className={`p-6 rounded-xl shadow-sm border ${isDark ? 'bg-slate-905 border-slate-800' : 'bg-white border-slate-100'}`}>
                      <div className="flex justify-between items-start mb-4">
                         <div>
-                           <h3 className="font-black text-2xl text-gray-900 mb-1">{exp.role}</h3>
+                           <h3 className={`font-black text-2xl ${isDark ? 'text-white' : 'text-gray-900'} mb-1`}>{exp.role}</h3>
                            <p className="text-lg font-bold uppercase tracking-wider" style={{ color: primaryColor }}>{exp.company}</p>
                         </div>
-                        <span className="text-xs font-black uppercase tracking-widest text-slate-500 bg-slate-100 px-3 py-1.5 rounded">{exp.duration}</span>
+                        <span className={`text-xs font-black uppercase tracking-widest ${isDark ? 'text-slate-400 bg-slate-800' : 'text-slate-500 bg-slate-100'} px-3 py-1.5 rounded`}>{exp.duration}</span>
                      </div>
-                     <p className="text-slate-700 leading-relaxed text-[0.95em] whitespace-pre-wrap">{exp.description}</p>
+                     <p className={`${isDark ? 'text-slate-300' : 'text-slate-700'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
                    </div>
                  ))}
                </div>
@@ -972,14 +1048,14 @@ export function BoldTemplate({ data, color, spacingClass, paddingClass }: any) {
 
          <div className="col-span-1 space-y-12">
             <div>
-               <h2 className="text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 text-gray-900 border-b-4 pb-2" style={{ borderColor: primaryColor }}>
+               <h2 className={`text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 ${isDark ? 'text-white border-slate-800' : 'text-gray-900 border-slate-200'} border-b-4 pb-2`} style={{ borderColor: primaryColor }}>
                  Education
                </h2>
                <div className={spacingClass}>
                  {data.education.map((edu: any, i: number) => (
-                   <div key={i} className="bg-white p-5 rounded-xl shadow-sm border border-slate-100">
-                      <p className="font-black text-gray-900 text-[1.1em] leading-tight mb-2">{edu.degree}</p>
-                      <p className="text-slate-600 font-bold mb-2">{edu.institution}</p>
+                   <div key={i} className={`p-5 rounded-xl shadow-sm border ${isDark ? 'bg-slate-905 border-slate-800' : 'bg-white border-slate-100'}`}>
+                      <p className={`font-black ${isDark ? 'text-white' : 'text-gray-900'} text-[1.1em] leading-tight mb-2`}>{edu.degree}</p>
+                      <p className={`font-bold mb-2 ${isDark ? 'text-slate-400' : 'text-slate-650'}`}>{edu.institution}</p>
                       <p className="text-xs font-black uppercase tracking-wider text-slate-400">{edu.year}</p>
                    </div>
                  ))}
@@ -987,7 +1063,7 @@ export function BoldTemplate({ data, color, spacingClass, paddingClass }: any) {
             </div>
 
             <div>
-               <h2 className="text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 text-gray-900 border-b-4 pb-2" style={{ borderColor: primaryColor }}>
+               <h2 className={`text-2xl font-black uppercase tracking-tight mb-6 flex items-center gap-4 ${isDark ? 'text-white border-slate-800' : 'text-gray-900 border-slate-200'} border-b-4 pb-2`} style={{ borderColor: primaryColor }}>
                  Skills
                </h2>
                <div className="flex flex-wrap gap-2">
@@ -1004,14 +1080,15 @@ export function BoldTemplate({ data, color, spacingClass, paddingClass }: any) {
   );
 }
 
-export function AcademicTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function AcademicTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`${paddingClass} text-stone-900 bg-[#fefdfb] h-full flex flex-col font-serif`} style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-      <div className="text-center mb-10 pb-8 border-b-2 border-stone-800 relative">
+    <div className={`${paddingClass} ${isDark ? 'text-stone-200 bg-stone-950' : 'text-stone-900 bg-[#fefdfb]'} h-full flex flex-col font-serif`} style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+      <div className={`text-center mb-10 pb-8 border-b-2 ${isDark ? 'border-stone-800' : 'border-stone-800'} relative`}>
         {data.photo && <img src={data.photo} alt="Profile" className="w-20 h-20 shadow-md mx-auto mb-5 object-cover" />}
-        <h1 className="text-4xl font-bold mb-3 uppercase tracking-widest whitespace-nowrap">{data.name}</h1>
-        <p className="text-lg italic text-stone-700 mb-4">{data.title}</p>
+        <h1 className="text-4xl font-bold mb-3 uppercase tracking-widest whitespace-nowrap" style={{ color: primaryColor }}>{data.name}</h1>
+        <p className={`text-lg italic ${isDark ? 'text-stone-400' : 'text-stone-700'} mb-4`}>{data.title}</p>
         <div className="flex justify-center gap-6 text-[0.85em] font-bold">
            <span>{data.email}</span>
            <span>•</span>
@@ -1024,7 +1101,7 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass }: an
       </div>
 
       <div className="mb-10">
-        <h2 className="text-xl font-bold uppercase tracking-widest mb-4 border-b border-stone-300 pb-1" style={{ color: primaryColor }}>Professional Experience</h2>
+        <h2 className={`text-xl font-bold uppercase tracking-widest mb-4 border-b ${isDark ? 'border-stone-800' : 'border-stone-300'} pb-1`} style={{ color: primaryColor }}>Professional Experience</h2>
         <div className={spacingClass}>
           {data.experience.map((exp: any, i: number) => (
             <div key={i} className="mb-6">
@@ -1032,13 +1109,13 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass }: an
                  <h3 className="font-bold text-[1.15em]">{exp.company}</h3>
                  <span className="text-[0.9em] font-bold">{exp.duration}</span>
               </div>
-              <p className="italic text-stone-700 mb-3">{exp.role}</p>
-              <div className="text-[0.95em] leading-relaxed text-stone-800 whitespace-pre-wrap ml-4">
+              <p className={`italic ${isDark ? 'text-stone-400' : 'text-stone-750'} mb-3`}>{exp.role}</p>
+              <div className={`text-[0.95em] leading-relaxed ${isDark ? 'text-stone-300' : 'text-stone-800'} whitespace-pre-wrap ml-4`}>
                  <ul className="list-disc">
-                   {exp.description.split('\\n').map((line: string, idx: number) => (
+                   {exp.description.split('\n').map((line: string, idx: number) => (
                       <li key={idx} className="mb-1 pl-1">{line.replace(/^•\s*/, '')}</li>
                    ))}
-                   {!exp.description.includes('\\n') && <li className="mb-1 pl-1">{exp.description.replace(/^•\s*/, '')}</li>}
+                   {!exp.description.includes('\n') && <li className="mb-1 pl-1">{exp.description.replace(/^•\s*/, '')}</li>}
                  </ul>
               </div>
             </div>
@@ -1047,13 +1124,13 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass }: an
       </div>
 
       <div className="mb-10">
-        <h2 className="text-xl font-bold uppercase tracking-widest mb-4 border-b border-stone-300 pb-1" style={{ color: primaryColor }}>Education</h2>
+        <h2 className={`text-xl font-bold uppercase tracking-widest mb-4 border-b ${isDark ? 'border-stone-800' : 'border-stone-300'} pb-1`} style={{ color: primaryColor }}>Education</h2>
         <div className={spacingClass}>
           {data.education.map((edu: any, i: number) => (
             <div key={i} className="flex justify-between items-baseline mb-4">
                <div>
                  <p className="font-bold text-[1.05em] mb-1">{edu.institution}</p>
-                 <p className="italic text-stone-700">{edu.degree}</p>
+                 <p className={`italic ${isDark ? 'text-stone-400' : 'text-stone-700'}`}>{edu.degree}</p>
                </div>
                <span className="font-bold text-[0.9em]">{edu.year}</span>
             </div>
@@ -1062,8 +1139,8 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass }: an
       </div>
 
       <div>
-        <h2 className="text-xl font-bold uppercase tracking-widest mb-4 border-b border-stone-300 pb-1" style={{ color: primaryColor }}>Skills & Expertise</h2>
-        <p className="text-[0.95em] leading-relaxed text-stone-800">
+        <h2 className={`text-xl font-bold uppercase tracking-widest mb-4 border-b ${isDark ? 'border-stone-800' : 'border-stone-300'} pb-1`} style={{ color: primaryColor }}>Skills & Expertise</h2>
+        <p className={`text-[0.95em] leading-relaxed ${isDark ? 'text-stone-300' : 'text-stone-800'}`}>
            {data.skills}
         </p>
       </div>
@@ -1071,46 +1148,47 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass }: an
   );
 }
 
-export function StartupTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function StartupTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`overflow-hidden h-full flex flex-col bg-[#0a0a0b] text-gray-200 font-sans`}>
-      <div className={`pt-12 pb-10 ${paddingClass} border-b border-white/10 flex items-center justify-between`}>
+    <div className={`overflow-hidden h-full flex flex-col ${isDark ? 'bg-[#0a0a0b] text-gray-200' : 'bg-slate-50 text-slate-800'} font-sans`}>
+      <div className={`pt-12 pb-10 ${paddingClass} border-b ${isDark ? 'border-white/10' : 'border-slate-200'} flex items-center justify-between`}>
          <div>
-            <h1 className="text-6xl font-black tracking-tighter mb-2 text-white">
+            <h1 className={`text-6xl font-black tracking-tighter mb-2 ${isDark ? 'text-white' : 'text-slate-900'}`}>
                {data.name.split(' ')[0]}<span style={{ color: primaryColor }}>.</span>
             </h1>
-            <p className="text-2xl font-bold tracking-tight text-white/50">{data.title}</p>
+            <p className={`text-2xl font-bold tracking-tight ${isDark ? 'text-white/50' : 'text-slate-450'}`}>{data.title}</p>
          </div>
          {data.photo && (
             <div className="relative">
-               <div className="absolute inset-0 rounded-xl blur-xl opacity-30" style={{ backgroundColor: primaryColor }}></div>
-               <img src={data.photo} alt="Profile" className="w-32 h-32 rounded-xl object-cover relative z-10 border border-white/10 box-content grayscale hover:grayscale-0 transition-all" />
+               {isDark && <div className="absolute inset-0 rounded-xl blur-xl opacity-30" style={{ backgroundColor: primaryColor }}></div>}
+               <img src={data.photo} alt="Profile" className={`w-32 h-32 rounded-xl object-cover relative z-10 border ${isDark ? 'border-white/10 grayscale hover:grayscale-0' : 'border-slate-200'} transition-all`} />
             </div>
          )}
       </div>
       
       <div className={`${paddingClass} flex-1 grid grid-cols-12 gap-8 mt-6`}>
          <div className="col-span-4 space-y-10">
-            <div className="p-5 rounded-2xl border border-white/5 bg-white/5">
-               <h2 className="text-sm font-bold uppercase tracking-widest mb-4 text-white/40">Status</h2>
+            <div className={`p-5 rounded-2xl border ${isDark ? 'border-white/5 bg-white/5' : 'border-slate-200 bg-slate-100/50'}`}>
+               <h2 className={`text-sm font-bold uppercase tracking-widest mb-4 ${isDark ? 'text-white/40' : 'text-slate-400'}`}>Status</h2>
                <div className="space-y-4 text-sm font-medium">
-                  <div className="flex bg-black/40 rounded-lg p-3 border border-white/5">
-                     <span className="text-white">Email</span>
-                     <span className="ml-auto opacity-70 truncate pl-2">{data.email}</span>
+                  <div className={`flex ${isDark ? 'bg-black/40 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-lg p-3 border`}>
+                     <span>Email</span>
+                     <span className={`ml-auto ${isDark ? 'text-white/70' : 'text-slate-650'} truncate pl-2`}>{data.email}</span>
                   </div>
-                  <div className="flex bg-black/40 rounded-lg p-3 border border-white/5">
-                     <span className="text-white">Phone</span>
-                     <span className="ml-auto opacity-70">{data.phone}</span>
+                  <div className={`flex ${isDark ? 'bg-black/40 border-white/5 text-white' : 'bg-white border-slate-200 text-slate-900'} rounded-lg p-3 border`}>
+                     <span>Phone</span>
+                     <span className={`ml-auto ${isDark ? 'text-white/70' : 'text-slate-650'}`}>{data.phone}</span>
                   </div>
                </div>
             </div>
 
             <div>
-               <h2 className="text-sm font-bold uppercase tracking-widest mb-4 text-white/40 pb-2 border-b border-white/10">Stack</h2>
+               <h2 className={`text-sm font-bold uppercase tracking-widest mb-4 ${isDark ? 'text-white/40 border-white/10' : 'text-slate-400 border-slate-200'} pb-2 border-b`}>Stack</h2>
                <div className="flex flex-wrap gap-2">
                   {data.skills.split(',').map((s: string, i: number) => (
-                    <span key={i} className="px-3 py-1 text-xs font-bold rounded-full bg-white/10 text-white hover:bg-white/20 transition-colors cursor-default">
+                    <span key={i} className={`px-3 py-1 text-xs font-bold rounded-full ${isDark ? 'bg-white/10 text-white hover:bg-white/20' : 'bg-slate-200 text-slate-800 hover:bg-slate-300'} transition-colors cursor-default`}>
                        {s.trim()}
                     </span>
                   ))}
@@ -1118,12 +1196,12 @@ export function StartupTemplate({ data, color, spacingClass, paddingClass }: any
             </div>
 
             <div>
-               <h2 className="text-sm font-bold uppercase tracking-widest mb-4 text-white/40 pb-2 border-b border-white/10">Background</h2>
+               <h2 className={`text-sm font-bold uppercase tracking-widest mb-4 ${isDark ? 'text-white/40 border-white/10' : 'text-slate-400 border-slate-200'} pb-2 border-b`}>Background</h2>
                <div className={spacingClass}>
                  {data.education.map((edu: any, i: number) => (
                    <div key={i}>
-                      <p className="font-bold text-white mb-1">{edu.degree}</p>
-                      <p className="text-white/50 text-sm">{edu.institution}</p>
+                      <p className={`font-bold mb-1 ${isDark ? 'text-white' : 'text-slate-900'}`}>{edu.degree}</p>
+                      <p className={`${isDark ? 'text-white/50' : 'text-slate-600'} text-sm`}>{edu.institution}</p>
                       <p className="text-xs font-mono mt-1" style={{ color: primaryColor }}>{edu.year}</p>
                    </div>
                  ))}
@@ -1133,23 +1211,23 @@ export function StartupTemplate({ data, color, spacingClass, paddingClass }: any
 
          <div className="col-span-8 space-y-10 pl-4">
             <div>
-               <h2 className="text-sm font-bold uppercase tracking-widest mb-4 text-white/40 pb-2 border-b border-white/10">Mission</h2>
-               <p className="text-white/80 leading-relaxed font-light text-[1.05em] whitespace-pre-wrap">{data.summary}</p>
+               <h2 className={`text-sm font-bold uppercase tracking-widest mb-4 ${isDark ? 'text-white/40 border-white/10' : 'text-slate-400 border-slate-200'} pb-2 border-b`}>Mission</h2>
+               <p className={`${isDark ? 'text-white/80' : 'text-slate-700'} leading-relaxed font-light text-[1.05em] whitespace-pre-wrap`}>{data.summary}</p>
             </div>
 
             <div>
-               <h2 className="text-sm font-bold uppercase tracking-widest mb-5 text-white/40 pb-2 border-b border-white/10">Traction</h2>
+               <h2 className={`text-sm font-bold uppercase tracking-widest mb-5 ${isDark ? 'text-white/40 border-white/10' : 'text-slate-400 border-slate-200'} pb-2 border-b`}>Traction</h2>
                <div className={spacingClass}>
                  {data.experience.map((exp: any, i: number) => (
                    <div key={i} className="group cursor-default">
-                     <div className="flex justify-between items-end mb-2">
-                        <div>
-                           <h3 className="font-bold text-2xl text-white group-hover:text-white transition-colors">{exp.role}</h3>
-                           <p className="text-lg font-medium opacity-70" style={{ color: primaryColor }}>{exp.company}</p>
-                        </div>
-                        <span className="text-xs font-mono bg-white/5 border border-white/10 px-2 py-1 rounded text-white/60">{exp.duration}</span>
-                     </div>
-                     <p className="text-white/70 leading-relaxed font-light text-[0.95em] whitespace-pre-wrap mt-3">{exp.description}</p>
+                      <div className="flex justify-between items-end mb-2">
+                         <div>
+                            <h3 className={`font-bold text-2xl ${isDark ? 'text-white' : 'text-slate-900'} group-hover:text-white transition-colors`}>{exp.role}</h3>
+                            <p className="text-lg font-medium opacity-70" style={{ color: primaryColor }}>{exp.company}</p>
+                         </div>
+                         <span className={`text-xs font-mono ${isDark ? 'bg-white/5 border-white/10 text-white/60' : 'bg-slate-200 border-slate-200 text-slate-600'} border px-2 py-1 rounded`}>{exp.duration}</span>
+                      </div>
+                      <p className={`${isDark ? 'text-white/70' : 'text-slate-650'} leading-relaxed font-light text-[0.95em] whitespace-pre-wrap mt-3`}>{exp.description}</p>
                    </div>
                  ))}
                </div>
@@ -1160,10 +1238,11 @@ export function StartupTemplate({ data, color, spacingClass, paddingClass }: any
   );
 }
 
-export function InfographicTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function InfographicTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`${paddingClass} text-slate-800 bg-white h-full flex flex-col font-sans`}>
+    <div className={`${paddingClass} ${isDark ? 'bg-[#0f172a] text-slate-200' : 'text-slate-800 bg-white'} h-full flex flex-col font-sans`}>
       <div className="flex gap-8 mb-10 pb-8 border-b-4" style={{ borderBottomColor: primaryColor }}>
         {data.photo && (
            <div className="w-32 h-32 flex-shrink-0">
@@ -1171,11 +1250,11 @@ export function InfographicTemplate({ data, color, spacingClass, paddingClass }:
            </div>
         )}
         <div className="flex-1">
-          <h1 className="text-5xl font-black tracking-tight mb-2 uppercase text-slate-900 whitespace-nowrap">{data.name}</h1>
+          <h1 className={`text-5xl font-black tracking-tight mb-2 uppercase ${isDark ? 'text-white' : 'text-slate-900'} whitespace-nowrap`}>{data.name}</h1>
           <p className="text-2xl font-bold mb-4" style={{ color: primaryColor }}>{data.title}</p>
           <div className="flex gap-4">
-             <span className="bg-slate-100 text-slate-600 font-bold px-4 py-1.5 rounded-full text-sm">{data.email}</span>
-             <span className="bg-slate-100 text-slate-600 font-bold px-4 py-1.5 rounded-full text-sm">{data.phone}</span>
+             <span className={`${isDark ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-600'} font-bold px-4 py-1.5 rounded-full text-sm`}>{data.email}</span>
+             <span className={`${isDark ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-600'} font-bold px-4 py-1.5 rounded-full text-sm`}>{data.phone}</span>
           </div>
         </div>
       </div>
@@ -1185,29 +1264,29 @@ export function InfographicTemplate({ data, color, spacingClass, paddingClass }:
             <div>
                <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style={{ backgroundColor: primaryColor }}>01</div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">About Me</h2>
+                  <h2 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>About Me</h2>
                </div>
-               <p className="text-slate-600 leading-relaxed font-medium pl-14 whitespace-pre-wrap">{data.summary}</p>
+               <p className={`${isDark ? 'text-slate-300' : 'text-slate-650'} leading-relaxed font-medium pl-14 whitespace-pre-wrap`}>{data.summary}</p>
             </div>
 
             <div>
                <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style={{ backgroundColor: primaryColor }}>02</div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Experience Timeline</h2>
+                  <h2 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Experience Timeline</h2>
                </div>
                
                <div className="pl-14 relative border-l-4 ml-5 space-y-8" style={{ borderColor: `${primaryColor}20` }}>
-                 {data.experience.map((exp: any, i: number) => (
-                   <div key={i} className="relative pl-6">
-                      <div className="absolute -left-[14px] top-1 w-6 h-6 rounded-full border-4 border-white" style={{ backgroundColor: primaryColor }}></div>
-                      <div className="flex justify-between items-start mb-2">
-                         <h3 className="font-black text-xl text-slate-900">{exp.role}</h3>
-                         <span className="text-xs font-black bg-slate-100 px-2 py-1 rounded text-slate-500">{exp.duration}</span>
-                      </div>
-                      <p className="font-bold mb-3" style={{ color: primaryColor }}>{exp.company}</p>
-                      <p className="text-slate-600 font-medium text-[0.95em] leading-relaxed whitespace-pre-wrap bg-slate-50 p-4 rounded-xl">{exp.description}</p>
-                   </div>
-                 ))}
+                  {data.experience.map((exp: any, i: number) => (
+                    <div key={i} className="relative pl-6">
+                       <div className="absolute -left-[14px] top-1 w-6 h-6 rounded-full border-4 border-white" style={{ backgroundColor: primaryColor }}></div>
+                       <div className="flex justify-between items-start mb-2">
+                          <h3 className={`font-black text-xl ${isDark ? 'text-white' : 'text-slate-900'}`}>{exp.role}</h3>
+                          <span className={`text-xs font-black ${isDark ? 'bg-slate-900 text-slate-400' : 'bg-slate-100 text-slate-500'} px-2 py-1 rounded`}>{exp.duration}</span>
+                       </div>
+                       <p className="font-bold mb-3" style={{ color: primaryColor }}>{exp.company}</p>
+                       <p className={`${isDark ? 'text-slate-350' : 'text-slate-600'} font-medium text-[0.95em] leading-relaxed whitespace-pre-wrap ${isDark ? 'bg-[#1e293b]' : 'bg-slate-50'} p-4 rounded-xl`}>{exp.description}</p>
+                    </div>
+                  ))}
                </div>
             </div>
          </div>
@@ -1216,13 +1295,13 @@ export function InfographicTemplate({ data, color, spacingClass, paddingClass }:
             <div>
                <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style={{ backgroundColor: primaryColor }}>03</div>
-                  <h2 className="text-2xl font-black uppercase tracking-tight text-slate-900">Expertise</h2>
+                  <h2 className={`text-2xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Expertise</h2>
                </div>
                <div className="pl-14 space-y-3">
                   {data.skills.split(',').map((s: string, i: number) => (
                     <div key={i} className="relative">
                        <p className="text-xs font-bold uppercase mb-1">{s.trim()}</p>
-                       <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+                       <div className={`h-2 w-full ${isDark ? 'bg-[#1e293b]' : 'bg-slate-100'} rounded-full overflow-hidden`}>
                           <div className="h-full rounded-full" style={{ width: `${Math.max(40, 100 - (i * 10))}%`, backgroundColor: primaryColor }}></div>
                        </div>
                     </div>
@@ -1233,14 +1312,14 @@ export function InfographicTemplate({ data, color, spacingClass, paddingClass }:
             <div>
                <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-full flex items-center justify-center text-white font-black" style={{ backgroundColor: primaryColor }}>04</div>
-                  <h2 className="text-xl font-black uppercase tracking-tight text-slate-900">Education</h2>
+                  <h2 className={`text-xl font-black uppercase tracking-tight ${isDark ? 'text-white' : 'text-slate-900'}`}>Education</h2>
                </div>
                <div className="pl-14 space-y-6">
                  {data.education.map((edu: any, i: number) => (
-                   <div key={i} className="bg-slate-50 p-4 rounded-xl border border-slate-100">
+                   <div key={i} className={`p-4 rounded-xl border ${isDark ? 'bg-slate-900 border-[#1e293b]' : 'bg-slate-50 border-slate-100'}`}>
                       <p className="text-xs font-black text-white px-2 py-0.5 rounded inline-block mb-2" style={{ backgroundColor: primaryColor }}>{edu.year}</p>
-                      <p className="font-black text-slate-900 leading-tight mb-1">{edu.degree}</p>
-                      <p className="text-slate-500 font-medium text-sm">{edu.institution}</p>
+                      <p className={`font-black ${isDark ? 'text-white' : 'text-slate-900'} leading-tight mb-1`}>{edu.degree}</p>
+                      <p className={`${isDark ? 'text-slate-400' : 'text-slate-500'} font-medium text-sm`}>{edu.institution}</p>
                    </div>
                  ))}
                </div>
@@ -1251,26 +1330,27 @@ export function InfographicTemplate({ data, color, spacingClass, paddingClass }:
   );
 }
 
-export function BusinessTemplate({ data, color, spacingClass, paddingClass }: any) {
+export function BusinessTemplate({ data, color, spacingClass, paddingClass, theme = 'light' }: any) {
   const primaryColor = getColorHex(color);
+  const isDark = theme === 'dark';
   return (
-    <div className={`${paddingClass} bg-white text-gray-800 h-full flex flex-col`}>
+    <div className={`${paddingClass} ${isDark ? 'bg-[#0f172a] text-slate-200' : 'bg-white text-gray-805'} h-full flex flex-col`}>
       <div className="flex justify-between items-end mb-8 border-b-2 pb-6" style={{ borderBottomColor: primaryColor }}>
          <div className="flex items-center gap-6">
              {data.photo && <img src={data.photo} alt="Profile" className="w-20 h-20 rounded-full object-cover shadow-md" />}
              <div>
-                 <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-2 uppercase whitespace-nowrap">{data.name}</h1>
-                 <p className="text-xl font-bold tracking-wide" style={{ color: primaryColor }}>{data.title}</p>
+                  <h1 className={`text-4xl font-black tracking-tight ${isDark ? 'text-white' : 'text-gray-900'} mb-2 uppercase whitespace-nowrap`}>{data.name}</h1>
+                  <p className="text-xl font-bold tracking-wide" style={{ color: primaryColor }}>{data.title}</p>
              </div>
          </div>
-         <div className="text-right text-[0.85em] font-medium text-gray-500 space-y-1">
+         <div className={`text-right text-[0.85em] font-medium ${isDark ? 'text-slate-400' : 'text-gray-500'} space-y-1`}>
              <p>{data.email}</p>
              <p>{data.phone}</p>
          </div>
       </div>
       
       <div className="mb-8">
-         <p className="text-[1.05em] leading-relaxed font-medium text-gray-700 bg-gray-50 p-6 rounded-lg border-l-4" style={{ borderLeftColor: primaryColor }}>
+         <p className={`text-[1.05em] leading-relaxed font-medium ${isDark ? 'text-slate-300 bg-slate-900/50' : 'text-gray-700 bg-gray-50'} p-6 rounded-lg border-l-4`} style={{ borderLeftColor: primaryColor }}>
             {data.summary}
          </p>
       </div>
@@ -1279,16 +1359,16 @@ export function BusinessTemplate({ data, color, spacingClass, paddingClass }: an
          <div className="col-span-2">
              <h2 className="text-[1.1em] font-black uppercase tracking-wider mb-6 pb-2 border-b border-gray-200" style={{ color: primaryColor }}>Professional Experience</h2>
              <div className={spacingClass}>
-               {data.experience.map((exp: any, i: number) => (
-                 <div key={i} className="mb-6">
-                   <h3 className="font-bold text-gray-900 text-[1.2em]">{exp.role}</h3>
-                   <div className="flex justify-between items-center mb-3">
-                      <p className="font-bold text-gray-600">{exp.company}</p>
-                      <span className="font-bold uppercase tracking-wider text-[0.8em]" style={{ color: primaryColor }}>{exp.duration}</span>
-                   </div>
-                   <p className="text-gray-700 leading-relaxed text-[0.95em] whitespace-pre-wrap">{exp.description}</p>
-                 </div>
-               ))}
+                {data.experience.map((exp: any, i: number) => (
+                  <div key={i} className="mb-6">
+                    <h3 className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} text-[1.2em]`}>{exp.role}</h3>
+                    <div className="flex justify-between items-center mb-3">
+                       <p className={`font-bold ${isDark ? 'text-slate-400' : 'text-gray-650'}`}>{exp.company}</p>
+                       <span className="font-bold uppercase tracking-wider text-[0.8em]" style={{ color: primaryColor }}>{exp.duration}</span>
+                    </div>
+                    <p className={`${isDark ? 'text-slate-350' : 'text-gray-655'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
+                  </div>
+                ))}
              </div>
          </div>
          <div className="col-span-1 space-y-8">
@@ -1297,8 +1377,8 @@ export function BusinessTemplate({ data, color, spacingClass, paddingClass }: an
                 <div className={spacingClass}>
                   {data.education.map((edu: any, i: number) => (
                     <div key={i}>
-                       <p className="font-bold text-gray-900 text-[1.1em] leading-tight mb-1">{edu.degree}</p>
-                       <p className="text-gray-600 font-medium mb-1">{edu.institution}</p>
+                       <p className={`font-bold ${isDark ? 'text-white' : 'text-gray-900'} text-[1.1em] leading-tight mb-1`}>{edu.degree}</p>
+                       <p className={`font-medium ${isDark ? 'text-slate-400' : 'text-gray-650'} mb-1`}>{edu.institution}</p>
                        <p className="font-bold uppercase tracking-wider text-[0.8em]" style={{ color: primaryColor }}>{edu.year}</p>
                     </div>
                   ))}
@@ -1309,7 +1389,7 @@ export function BusinessTemplate({ data, color, spacingClass, paddingClass }: an
                 <h2 className="text-[1.1em] font-black uppercase tracking-wider mb-6 pb-2 border-b border-gray-200" style={{ color: primaryColor }}>Expertise</h2>
                 <ul className="space-y-2">
                    {data.skills.split(',').map((s: string, i: number) => (
-                     <li key={i} className="flex items-center gap-2 text-[0.95em] font-medium text-gray-700">
+                     <li key={i} className={`flex items-center gap-2 text-[0.95em] font-medium ${isDark ? 'text-slate-300' : 'text-gray-700'}`}>
                         <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: primaryColor }}></span>
                         {s.trim()}
                      </li>

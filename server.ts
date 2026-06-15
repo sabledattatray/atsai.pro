@@ -5,6 +5,9 @@ import { GoogleGenAI } from '@google/genai';
 import multer from 'multer';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_T0OhZChna7TYPH',

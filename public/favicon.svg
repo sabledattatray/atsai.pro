@@ -1,8 +1,47 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1A66FF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-  <rect x="2" y="2" width="20" height="20" rx="6" fill="#F0F5FF" stroke="none" />
-  <rect x="16" y="16" width="3" height="3" rx="1" fill="#1A66FF" />
-  <rect x="5" y="16" width="3" height="3" rx="1" fill="#1A66FF" />
-  <path d="M17.5 16v-4a2 2 0 0 0-2-2h-7a2 2 0 0 0-2 2v4" />
-  <path d="M12 10V5" />
-  <circle cx="12" cy="7" r="2" fill="#1A66FF" />
+<svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Gradients -->
+    <linearGradient id="fav-gradient-1" x1="0" y1="0" x2="32" y2="32" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#818cf8" />
+      <stop offset="50%" stopColor="#6366f1" />
+      <stop offset="100%" stopColor="#4f46e5" />
+    </linearGradient>
+    <linearGradient id="fav-gradient-2" x1="0" y1="32" x2="32" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stopColor="#d946ef" />
+      <stop offset="100%" stopColor="#a855f7" />
+    </linearGradient>
+    <filter id="glow-filter" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Dark Base Background Rounded Box -->
+  <rect width="32" height="32" rx="8" fill="#030712" />
+  <rect width="30" height="30" x="1" y="1" rx="7" fill="#0b0f19" stroke="rgba(255, 255, 255, 0.08)" stroke-width="1" />
+
+  <!-- Background grid nodes -->
+  <circle cx="8" cy="8" r="1" fill="white" fill-opacity="0.15" />
+  <circle cx="24" cy="8" r="1" fill="white" fill-opacity="0.15" />
+  <circle cx="8" cy="24" r="1" fill="white" fill-opacity="0.15" />
+  <circle cx="24" cy="24" r="1" fill="white" fill-opacity="0.15" />
+
+  <!-- Abstract Document/Folder path -->
+  <path
+    d="M7 9C7 7.89543 7.89543 7 9 7H18L25 14V23C25 24.1046 24.1046 25 23 25H9C7.89543 25 7 24.1046 7 23V9Z"
+    stroke="url(#fav-gradient-1)"
+    stroke-width="2"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+
+  <!-- Connected Sparkle/Node path -->
+  <path
+    d="M14 14.5L16 11L18 14.5L21.5 16.5L18 18.5L16 22L14 18.5L10.5 16.5L14 14.5Z"
+    fill="url(#fav-gradient-2)"
+    filter="url(#glow-filter)"
+  />
+
+  <!-- Sparkle Core -->
+  <circle cx="16" cy="16.5" r="1" fill="white" />
 </svg>
