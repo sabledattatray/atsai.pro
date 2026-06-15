@@ -1,6 +1,6 @@
 # Resume Copilot AI
 
-![Resume Copilot Banner](./public/screenshot.png)
+![Resume Copilot Banner](./public/landing_page.png)
 
 Resume Copilot AI is an advanced, automated Resume Parsing, ATS (Applicant Tracking System) Simulation, and Career Hub platform. Built with a React-Vite frontend, an Express-Node backend, and powered by Google's Gemini 2.5 Flash API, the platform evaluates resume readability, flags critical keyword gaps, suggests STAR-formatted bullet rewrites, and renders print-ready PDF layouts.
 
