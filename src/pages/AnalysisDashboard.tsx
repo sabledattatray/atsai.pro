@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { UploadCloud, FileText, CheckCircle2, AlertCircle, ArrowRight, Loader2, Download, History, ChevronRight, Eye, Search, Maximize2, Server, Terminal, Command, Zap, Plus, X, Lock, Share2, Users, LayoutDashboard, Target, TrendingUp, TrendingDown, Sparkles, BarChart2, AlertTriangle } from 'lucide-react';
+import { UploadCloud, FileText, User, CheckCircle2, AlertCircle, ArrowRight, Loader2, Download, History, ChevronRight, Eye, Search, Maximize2, Server, Terminal, Command, Zap, Plus, X, Lock, Share2, Users, LayoutDashboard, Target, TrendingUp, TrendingDown, Sparkles, BarChart2, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link, useLocation } from 'react-router-dom';
+import { auth, onAuthStateChanged } from '@/lib/firebase';
+import { updatePassword } from 'firebase/auth';
 
 declare global {
   interface Window {
@@ -34,9 +36,30 @@ export default function AnalysisDashboard() {
   const [sharing, setSharing] = useState(false);
   const [shareCopied, setShareCopied] = useState(false);
   const location = useLocation();
+  const [activeTab, setActiveTab] = useState<'scan' | 'settings'>('scan');
+  const [user, setUser] = useState<any>(null);
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [passChanging, setPassChanging] = useState(false);
+  const [passMsg, setPassMsg] = useState('');
+
+  useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
+    const tab = searchParams.get('tab');
+    if (tab === 'settings') {
+      setActiveTab('settings');
+    } else {
+      setActiveTab('scan');
+    }
+
     if (location.pathname === '/app/analyze' || searchParams.get('reset') === 'true') {
       setStatus('IDLE');
       setJobDescription('');
@@ -272,21 +295,68 @@ export default function AnalysisDashboard() {
     }
   };
 
+  const isOAuthUser = user?.providerData?.some((p: any) => p.providerId === 'google.com' || p.providerId === 'github.com');
+
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setPassMsg('');
+    if (newPassword !== confirmPassword) {
+      setPassMsg('Passwords do not match.');
+      return;
+    }
+    if (newPassword.length < 6) {
+      setPassMsg('Password must be at least 6 characters.');
+      return;
+    }
+
+    setPassChanging(true);
+    if (auth && auth.currentUser) {
+      try {
+        await updatePassword(auth.currentUser, newPassword);
+        setPassMsg('Password updated successfully!');
+        setNewPassword('');
+        setConfirmPassword('');
+      } catch (err: any) {
+        console.error("Password update error:", err);
+        setPassMsg(err.message || 'Failed to update password. You may need to re-authenticate or re-login.');
+      } finally {
+        setPassChanging(false);
+      }
+    } else {
+      await new Promise(r => setTimeout(r, 1000));
+      setPassMsg('Password updated successfully (Simulated)!');
+      setNewPassword('');
+      setConfirmPassword('');
+      setPassChanging(false);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-[#030712] selection:bg-indigo-500/20 pb-20 font-sans text-slate-100">
       <div className="container mx-auto px-4 py-8 max-w-6xl relative z-10">
         
         {/* Top bar replacements */}
         <div className="flex items-center justify-between mb-10 pb-4 border-b border-white/5">
-           <div className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2 font-mono">
-             <LayoutDashboard className="w-4 h-4 text-indigo-400" /> Workspace Overview
+           <div className="flex items-center gap-6">
+             <button 
+               onClick={() => setActiveTab('scan')}
+               className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 font-mono pb-4 -mb-4 border-b-2 transition-all cursor-pointer ${activeTab === 'scan' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-white'}`}
+             >
+               <LayoutDashboard className="w-4 h-4" /> Workspace Overview
+             </button>
+             <button 
+               onClick={() => setActiveTab('settings')}
+               className={`text-xs font-bold uppercase tracking-widest flex items-center gap-2 font-mono pb-4 -mb-4 border-b-2 transition-all cursor-pointer ${activeTab === 'settings' ? 'border-indigo-500 text-indigo-400' : 'border-transparent text-slate-400 hover:text-white'}`}
+             >
+               <User className="w-4 h-4" /> Account Settings
+             </button>
            </div>
            <div className="flex items-center gap-3">
                <div 
                   className="flex items-center gap-2 bg-indigo-500/10 text-indigo-300 px-3.5 py-1.5 rounded-full border border-indigo-500/20 shadow-[0_0_15px_rgba(99,102,241,0.1)] cursor-pointer hover:bg-indigo-500/20 transition-all font-mono" 
-                  onClick={() => setShowPaywall(false)}
+                  onClick={() => setShowPaywall(true)}
                >
-                   <Zap className="w-3.5 h-3.5 text-indigo-400" /> <span className="font-extrabold text-xs">Admin Unlimited</span>
+                   <Zap className="w-3.5 h-3.5 text-indigo-400" /> <span className="font-extrabold text-xs">{credits > 50 ? 'Admin Unlimited' : 'Upgrade Pro'}</span>
                </div>
                <div className="hidden sm:flex items-center gap-2 bg-slate-900/60 hover:bg-slate-800/80 px-3.5 py-1.5 rounded-full border border-white/5 text-xs text-slate-400 font-semibold cursor-pointer hover:border-white/10 transition-colors font-mono" onClick={() => setShowCmd(true)}>
                    <Search className="w-3.5 h-3.5 text-slate-500" /> <kbd className="font-mono text-[9px] bg-slate-950 px-1.5 py-0.5 rounded border border-white/10 ml-1">⌘K</kbd>
@@ -294,213 +364,426 @@ export default function AnalysisDashboard() {
            </div>
         </div>
 
-        {status === 'IDLE' && (
-          <AnimatePresence>
-            <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
-              <div className="mb-10 max-w-3xl">
-                <h1 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight leading-none">Master the ATS.<br/><span className="text-gradient">Land the interview.</span></h1>
-                <p className="text-slate-400 text-lg font-medium">Upload your resume to instantly simulate Enterprise ATS logic, uncover missing keywords, and get AI-driven rewrites.</p>
-              </div>
+        {activeTab === 'scan' ? (
+          <>
+            {status === 'IDLE' && (
+              <AnimatePresence>
+                <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }}>
+                  <div className="mb-10 max-w-3xl">
+                    <h1 className="text-4xl sm:text-5xl font-black text-white mb-4 tracking-tight leading-none">Master the ATS.<br/><span className="text-gradient">Land the interview.</span></h1>
+                    <p className="text-slate-400 text-lg font-medium">Upload your resume to instantly simulate Enterprise ATS logic, uncover missing keywords, and get AI-driven rewrites.</p>
+                  </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                <div className="lg:col-span-8 flex flex-col space-y-6">
-                  
-                  {/* File Upload Box */}
-                  <div className="p-[1px] bg-gradient-to-b from-white/10 to-transparent rounded-2xl shadow-2xl">
-                    <div className="bg-[#0b0f19]/60 backdrop-blur-md rounded-[15px] p-5 flex flex-col border border-white/5">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                        {files.map((f, i) => (
-                           <div key={i} className="flex border border-white/5 rounded-xl p-3 items-center justify-between bg-slate-950/50 hover:border-white/10 transition-colors">
-                               <div className="flex items-center gap-2 overflow-hidden">
-                                   <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
-                                   <span className="text-xs font-semibold text-slate-200 truncate" title={f.name}>{f.name}</span>
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div className="lg:col-span-8 flex flex-col space-y-6">
+                      
+                      {/* File Upload Box */}
+                      <div className="p-[1px] bg-gradient-to-b from-white/10 to-transparent rounded-2xl shadow-2xl">
+                        <div className="bg-[#0b0f19]/60 backdrop-blur-md rounded-[15px] p-5 flex flex-col border border-white/5">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                            {files.map((f, i) => (
+                               <div key={i} className="flex border border-white/5 rounded-xl p-3 items-center justify-between bg-slate-950/50 hover:border-white/10 transition-colors">
+                                   <div className="flex items-center gap-2 overflow-hidden">
+                                       <FileText className="w-4 h-4 text-indigo-400 shrink-0" />
+                                       <span className="text-xs font-semibold text-slate-200 truncate" title={f.name}>{f.name}</span>
+                                   </div>
+                                   <X className="w-4 h-4 text-slate-500 cursor-pointer hover:text-rose-400 shrink-0 ml-2 transition-colors" onClick={(e) => { e.stopPropagation(); removeFile(i); }} />
                                </div>
-                               <X className="w-4 h-4 text-slate-500 cursor-pointer hover:text-rose-400 shrink-0 ml-2 transition-colors" onClick={(e) => { e.stopPropagation(); removeFile(i); }} />
-                           </div>
-                        ))}
-                        {files.length < 3 && (
-                            <div 
-                              className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-white/10 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 hover:border-indigo-500/50 transition-all cursor-pointer group min-h-[60px]"
-                              onClick={() => fileInputRef.current?.click()}
-                            >
-                              <input type="file" ref={fileInputRef} className="hidden" accept=".pdf" multiple onChange={handleFileChange} />
-                              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-white transition-colors font-mono">
-                                <Plus className="w-4 h-4 text-indigo-400" /> Add Resume {files.length > 0 && '(Compare)'}
-                              </div>
-                            </div>
-                        )}
+                            ))}
+                            {files.length < 3 && (
+                                <div 
+                                  className="flex flex-col items-center justify-center p-3 border-2 border-dashed border-white/10 rounded-xl bg-slate-950/20 hover:bg-slate-950/40 hover:border-indigo-500/50 transition-all cursor-pointer group min-h-[60px]"
+                                  onClick={() => fileInputRef.current?.click()}
+                                >
+                                  <input type="file" ref={fileInputRef} className="hidden" accept=".pdf" multiple onChange={handleFileChange} />
+                                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 group-hover:text-white transition-colors font-mono">
+                                    <Plus className="w-4 h-4 text-indigo-400" /> Add Resume {files.length > 0 && '(Compare)'}
+                                  </div>
+                                </div>
+                            )}
+                          </div>
+                          <p className="text-[9px] text-slate-500 font-bold font-mono mt-3.5 uppercase tracking-widest text-center">PDF format only (Max 3 variations)</p>
+                        </div>
                       </div>
-                      <p className="text-[9px] text-slate-500 font-bold font-mono mt-3.5 uppercase tracking-widest text-center">PDF format only (Max 3 variations)</p>
-                    </div>
-                  </div>
 
-                  {/* Target Job Description */}
-                  <div className="p-[1px] bg-gradient-to-b from-white/10 to-transparent rounded-2xl shadow-2xl">
-                    <div className="bg-[#0b0f19]/60 backdrop-blur-md rounded-[15px] overflow-hidden flex flex-col h-[280px] border border-white/5">
-                        <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between bg-slate-950/40">
-                            <span className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2 font-mono"><FileText className="w-4 h-4 text-indigo-400"/> Target Job Description</span>
-                            {jobDescription.length > 0 && <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25 font-mono">Ready</span>}
-                        </div>
-                        <textarea 
-                          className="flex-1 p-5 focus:outline-none resize-none text-sm leading-relaxed placeholder:text-slate-500 bg-slate-950/20 text-white"
-                          placeholder="Paste the job description here... (include responsibilities and requirements)"
-                          value={jobDescription}
-                          onChange={(e) => setJobDescription(e.target.value)}
-                        />
-                    </div>
-                  </div>
-
-                  {errorMsg && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-center p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 font-semibold text-xs uppercase tracking-wider font-mono">
-                      <AlertCircle className="w-4 h-4 shrink-0" /> {errorMsg}
-                    </motion.div>
-                  )}
-
-                  <div className="flex justify-end pt-2">
-                    <Button 
-                      size="lg" 
-                      className="px-8 shadow-xl shadow-indigo-500/10 transition-all active:scale-98 group rounded-xl"
-                      disabled={files.length === 0 || !jobDescription}
-                      onClick={handleAnalyze}
-                    >
-                      Run Full Analysis <Command className="ml-2 w-4 h-4 opacity-60 transition-opacity group-hover:opacity-100" />
-                    </Button>
-                  </div>
-
-                </div>
-                
-                {/* Right Sidebar */}
-                <div className="lg:col-span-4 flex flex-col gap-6">
-                  <div className="rounded-2xl border border-white/5 bg-[#0b0f19]/30 backdrop-blur-md p-5 shadow-2xl">
-                    <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2 font-mono"><History className="w-3.5 h-3.5 text-indigo-400"/> Recent Scans</h3>
-                    {history.length > 0 ? (
-                      <ul className="space-y-3">
-                        {history.map((item, index) => (
-                          <li key={item.id} className="flex justify-between items-center text-xs p-3 bg-slate-950/40 rounded-xl border border-white/5 shadow-inner cursor-pointer hover:border-white/20 transition-all">
-                            <div className="flex flex-col gap-0.5">
-                                <span className="font-bold text-slate-200">v{history.length - index} Resume</span>
-                                <span className="text-[10px] text-slate-500 font-mono font-medium">{item.date}</span>
+                      {/* Target Job Description */}
+                      <div className="p-[1px] bg-gradient-to-b from-white/10 to-transparent rounded-2xl shadow-2xl">
+                        <div className="bg-[#0b0f19]/60 backdrop-blur-md rounded-[15px] overflow-hidden flex flex-col h-[280px] border border-white/5">
+                            <div className="px-5 py-3 border-b border-white/5 flex items-center justify-between bg-slate-950/40">
+                                <span className="text-xs font-bold uppercase tracking-widest text-slate-400 flex items-center gap-2 font-mono"><FileText className="w-4 h-4 text-indigo-400"/> Target Job Description</span>
+                                {jobDescription.length > 0 && <span className="text-[10px] uppercase font-bold tracking-widest text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/25 font-mono">Ready</span>}
                             </div>
-                            <span className={`font-mono font-bold px-2 py-1 rounded-md border ${item.score >= 80 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
-                                {item.score}
-                            </span>
-                          </li>
-                        ))}
-                      </ul>
-                    ) : (
-                      <div className="text-center py-8">
-                        <Terminal className="w-8 h-8 text-slate-700 mx-auto mb-2 opacity-50" />
-                        <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest font-mono">No history yet.</p>
+                            <textarea 
+                              className="flex-1 p-5 focus:outline-none resize-none text-sm leading-relaxed placeholder:text-slate-500 bg-slate-950/20 text-white"
+                              placeholder="Paste the job description here... (include responsibilities and requirements)"
+                              value={jobDescription}
+                              onChange={(e) => setJobDescription(e.target.value)}
+                            />
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  
-                  <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/40 to-slate-900/40 p-5 overflow-hidden relative group cursor-pointer shadow-xl">
-                    <div className="absolute top-0 right-0 p-4 opacity-5 transform translate-x-2 -translate-y-2 group-hover:scale-115 transition-transform duration-300">
-                        <Maximize2 className="w-24 h-24 text-indigo-400"/>
-                    </div>
-                    <h3 className="text-sm font-bold text-white mb-1">Unlock Multi-Compare</h3>
-                    <p className="text-xs text-slate-400 mb-4 pr-4 leading-relaxed font-medium">Test variations of your resume simultaneously against the same JD.</p>
-                    <span className="text-[8px] uppercase tracking-widest font-mono font-bold bg-indigo-500 text-white px-2 py-1 rounded shadow-md">Pro Feature</span>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-        )}
 
-        {/* Processing/Loading Screen */}
-        {status !== 'IDLE' && status !== 'COMPLETE' && (
-          <div className="max-w-xl mx-auto pt-20">
-            <div className="bg-[#0b0f19]/70 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden">
-                <div className="bg-slate-950/90 border-b border-white/5 px-4 py-3.5 flex items-center justify-between">
-                    <div className="flex gap-1.5">
-                        <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></div>
-                        <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
-                        <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
-                    </div>
-                    <span className="text-[9px] font-mono text-slate-500 tracking-wider">Processing Job Engine Simulation...</span>
-                </div>
-                <div className="p-6">
-                    <div className="flex items-center gap-4 mb-8">
-                        <div className="w-12 h-12 bg-indigo-500/10 border border-indigo-500/25 rounded-xl flex items-center justify-center animate-pulse shadow-[0_0_15px_rgba(99,102,241,0.2)]">
-                            <Server className="w-5 h-5 text-indigo-400 animate-spin" />
-                        </div>
-                        <div>
-                            <h2 className="text-base font-extrabold text-white tracking-tight leading-none mb-1">{status === 'ANALYZING' ? 'AI Scoring Engine Active' : 'Parsing Secure Document'}</h2>
-                            <p className="text-xs text-slate-400">Estimating completion in a few seconds.</p>
-                        </div>
+                      {errorMsg && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex gap-3 items-center p-4 bg-rose-500/10 border border-rose-500/20 rounded-xl text-rose-400 font-semibold text-xs uppercase tracking-wider font-mono">
+                          <AlertCircle className="w-4 h-4 shrink-0" /> {errorMsg}
+                        </motion.div>
+                      )}
+
+                      <div className="flex justify-end pt-2">
+                        <Button 
+                          size="lg" 
+                          className="px-8 shadow-xl shadow-indigo-500/10 transition-all active:scale-98 group rounded-xl"
+                          disabled={files.length === 0 || !jobDescription}
+                          onClick={handleAnalyze}
+                        >
+                          Run Full Analysis <Command className="ml-2 w-4 h-4 opacity-60 transition-opacity group-hover:opacity-100" />
+                        </Button>
+                      </div>
+
                     </div>
                     
-                    <div className="space-y-4 font-mono text-[10px]">
-                        {timeline.map((event, i) => (
-                            <div key={i} className={`flex items-start gap-4 transition-all duration-300 ${event.status === 'pending' ? 'opacity-30' : 'opacity-100'}`}>
-                                <div className="w-16 shrink-0 text-slate-500 pt-0.5">{event.time || '—:—:—'}</div>
-                                <div className="flex-1 flex gap-3 items-center">
-                                    <div className="mt-0.5">
-                                        {event.status === 'done' ? (
-                                            <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
-                                        ) : event.status === 'active' ? (
-                                            <Loader2 className="w-3.5 h-3.5 text-indigo-400 animate-spin" />
-                                        ) : (
-                                            <div className="w-3.5 h-3.5 rounded-full border border-slate-700" />
-                                        )}
-                                    </div>
-                                    <span className={event.status === 'active' ? 'text-indigo-300 font-bold' : 'text-slate-300'}>{event.label}</span>
+                    {/* Right Sidebar */}
+                    <div className="lg:col-span-4 flex flex-col gap-6">
+                      
+                      {/* Account & Plan Overview Card */}
+                      <div className="rounded-2xl border border-white/5 bg-[#0b0f19]/30 backdrop-blur-md p-5 shadow-2xl space-y-4">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white font-extrabold text-xs uppercase shadow-md shadow-indigo-500/25">
+                            {user ? (user.displayName ? user.displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : user.email?.substring(0, 2).toUpperCase()) : 'DS'}
+                          </div>
+                          <div className="overflow-hidden">
+                            <h4 className="text-xs font-bold text-slate-200 truncate">{user?.displayName || 'Guest User'}</h4>
+                            <p className="text-[10px] text-slate-400 truncate">{user?.email || 'seeker@example.com'}</p>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-white/5 pt-3.5 space-y-3 text-xs font-mono font-semibold">
+                          <div className="flex justify-between items-center text-slate-300">
+                            <span className="font-sans">Active Plan</span>
+                            <span className={`text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded ${credits > 50 ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/20' : 'bg-slate-800 text-slate-400 border border-white/5'}`}>
+                              {credits > 50 ? 'Pro Unlimited' : 'Spark Free'}
+                            </span>
+                          </div>
+                          <div className="flex justify-between items-center text-slate-300">
+                            <span className="font-sans">Scan Credits</span>
+                            <span className="text-slate-200">{credits > 50 ? 'Unlimited' : `${credits} Remaining`}</span>
+                          </div>
+                          <div className="flex justify-between items-center text-slate-300">
+                            <span className="font-sans">Downloads/Edits</span>
+                            <span className="text-emerald-400">Unlimited</span>
+                          </div>
+                        </div>
+
+                        <div className="border-t border-white/5 pt-3 flex justify-between">
+                          <button
+                            onClick={() => setActiveTab('settings')}
+                            className="text-[9px] font-bold uppercase tracking-widest text-indigo-400 hover:text-indigo-300 transition-colors font-mono cursor-pointer bg-transparent border-none p-0"
+                          >
+                            Manage Account →
+                          </button>
+                          {!isOAuthUser && (
+                            <button
+                              onClick={() => { setActiveTab('settings'); }}
+                              className="text-[9px] font-bold uppercase tracking-widest text-slate-500 hover:text-slate-300 transition-colors font-mono cursor-pointer bg-transparent border-none p-0"
+                            >
+                              Change Password
+                            </button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="rounded-2xl border border-white/5 bg-[#0b0f19]/30 backdrop-blur-md p-5 shadow-2xl">
+                        <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2 font-mono"><History className="w-3.5 h-3.5 text-indigo-400"/> Recent Scans</h3>
+                        {history.length > 0 ? (
+                          <ul className="space-y-3">
+                            {history.map((item, index) => (
+                              <li key={item.id} className="flex justify-between items-center text-xs p-3 bg-slate-950/40 rounded-xl border border-white/5 shadow-inner cursor-pointer hover:border-white/20 transition-all">
+                                <div className="flex flex-col gap-0.5">
+                                    <span className="font-bold text-slate-200">v{history.length - index} Resume</span>
+                                    <span className="text-[10px] text-slate-500 font-mono font-medium">{item.date}</span>
                                 </div>
+                                <span className={`font-mono font-bold px-2 py-1 rounded-md border ${item.score >= 80 ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)]' : 'bg-amber-500/10 border-amber-500/20 text-amber-400'}`}>
+                                    {item.score}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="text-center py-8">
+                            <Terminal className="w-8 h-8 text-slate-700 mx-auto mb-2 opacity-50" />
+                            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest font-mono">No history yet.</p>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="rounded-2xl border border-indigo-500/20 bg-gradient-to-br from-indigo-950/40 to-slate-900/40 p-5 overflow-hidden relative group cursor-pointer shadow-xl">
+                        <div className="absolute top-0 right-0 p-4 opacity-5 transform translate-x-2 -translate-y-2 group-hover:scale-115 transition-transform duration-300">
+                            <Maximize2 className="w-24 h-24 text-indigo-400"/>
+                        </div>
+                        <h3 className="text-sm font-bold text-white mb-1">Unlock Multi-Compare</h3>
+                        <p className="text-xs text-slate-400 mb-4 pr-4 leading-relaxed font-medium">Test variations of your resume simultaneously against the same JD.</p>
+                        <span className="text-[8px] uppercase tracking-widest font-mono font-bold bg-indigo-500 text-white px-2 py-1 rounded shadow-md">Pro Feature</span>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              </AnimatePresence>
+            )}
+
+            {/* Processing/Loading Screen */}
+            {status !== 'IDLE' && status !== 'COMPLETE' && (
+              <div className="max-w-xl mx-auto pt-20">
+                <div className="bg-[#0b0f19]/70 backdrop-blur-xl rounded-2xl border border-white/10 shadow-[0_30px_60px_rgba(0,0,0,0.6)] overflow-hidden">
+                    <div className="bg-slate-950/90 border-b border-white/5 px-4 py-3.5 flex items-center justify-between">
+                        <div className="flex gap-1.5">
+                            <div className="w-2.5 h-2.5 rounded-full bg-rose-500/80"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
+                            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/80"></div>
+                        </div>
+                        <span className="text-[9px] font-mono text-slate-500 tracking-wider">Processing Job Engine Simulation...</span>
+                    </div>
+                    <div className="p-6">
+                        <div className="flex items-center gap-4 mb-8">
+                            <div className="w-12 h-12 bg-indigo-500/10 border border-indigo-500/25 rounded-xl flex items-center justify-center animate-pulse shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                                <Server className="w-5 h-5 text-indigo-400 animate-spin" />
                             </div>
-                        ))}
+                            <div>
+                                <h2 className="text-base font-extrabold text-white tracking-tight leading-none mb-1">{status === 'ANALYZING' ? 'AI Scoring Engine Active' : 'Parsing Secure Document'}</h2>
+                                <p className="text-xs text-slate-400">Estimating completion in a few seconds.</p>
+                            </div>
+                        </div>
+                        
+                        <div className="space-y-4 font-mono text-[10px]">
+                            {timeline.map((event, i) => (
+                                <div key={i} className={`flex items-start gap-4 transition-all duration-300 ${event.status === 'pending' ? 'opacity-30' : 'opacity-100'}`}>
+                                    <div className="w-16 shrink-0 text-slate-500 pt-0.5">{event.time || '—:—:—'}</div>
+                                    <div className="flex-1 flex gap-3 items-center">
+                                        <div className="mt-0.5">
+                                            {event.status === 'done' ? (
+                                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 drop-shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
+                                            ) : event.status === 'active' ? (
+                                                <Loader2 className="w-3.5 h-3.5 text-indigo-400 animate-spin" />
+                                            ) : (
+                                                <div className="w-3.5 h-3.5 rounded-full border border-slate-700" />
+                                            )}
+                                        </div>
+                                        <span className={event.status === 'active' ? 'text-indigo-300 font-bold' : 'text-slate-300'}>{event.label}</span>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
                     </div>
                 </div>
-            </div>
-          </div>
-        )}
-
-        {status === 'COMPLETE' && results && results.length > 0 && (
-          <div className="space-y-6 pt-6">
-            {results.length > 1 && (
-               <div className="bg-[#0b0f19]/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-2xl p-4 overflow-x-auto flex items-center gap-3">
-                 <div className="text-[9px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 flex items-center gap-2 font-mono shrink-0">
-                   <Server className="w-3.5 h-3.5" /> Best Match Picked
-                 </div>
-                 {results.sort((a,b) => b.atsScore - a.atsScore).map((r, i) => (
-                    <div 
-                      key={i} 
-                      onClick={() => setActiveResultIdx(results.indexOf(r))}
-                      className={`flex flex-col min-w-[200px] border rounded-xl p-3 cursor-pointer transition-all ${results.indexOf(r) === activeResultIdx ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]' : 'border-white/5 bg-slate-950/20 hover:border-white/10'}`}
-                    >
-                       <div className="flex justify-between items-center mb-1">
-                          <span className="text-xs font-bold truncate text-slate-200 max-w-[120px]" title={r.fileName}>{r.fileName || `Resume Variation ${i+1}`}</span>
-                          <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded font-mono ${r.atsScore >= 80 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>Score: {r.atsScore}</span>
-                       </div>
-                    </div>
-                 ))}
-               </div>
+              </div>
             )}
-            
-            {/* Referral Banner */}
-            <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-700 rounded-2xl p-5 shadow-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 border border-indigo-500/20 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full pointer-events-none"></div>
-                <div className="flex items-center gap-3.5 relative z-10">
-                    <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
-                        <Users className="w-5 h-5 text-white" />
+
+            {status === 'COMPLETE' && results && results.length > 0 && (
+              <div className="space-y-6 pt-6">
+                {results.length > 1 && (
+                   <div className="bg-[#0b0f19]/40 backdrop-blur-md rounded-2xl border border-white/5 shadow-2xl p-4 overflow-x-auto flex items-center gap-3">
+                     <div className="text-[9px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/20 flex items-center gap-2 font-mono shrink-0">
+                       <Server className="w-3.5 h-3.5" /> Best Match Picked
+                     </div>
+                     {results.sort((a,b) => b.atsScore - a.atsScore).map((r, i) => (
+                        <div 
+                          key={i} 
+                          onClick={() => setActiveResultIdx(results.indexOf(r))}
+                          className={`flex flex-col min-w-[200px] border rounded-xl p-3 cursor-pointer transition-all ${results.indexOf(r) === activeResultIdx ? 'border-indigo-500 bg-indigo-500/10 shadow-[0_0_20px_rgba(99,102,241,0.15)]' : 'border-white/5 bg-slate-950/20 hover:border-white/10'}`}
+                        >
+                           <div className="flex justify-between items-center mb-1">
+                              <span className="text-xs font-bold truncate text-slate-200 max-w-[120px]" title={r.fileName}>{r.fileName || `Resume Variation ${i+1}`}</span>
+                              <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded font-mono ${r.atsScore >= 80 ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-400 border border-amber-500/20'}`}>Score: {r.atsScore}</span>
+                           </div>
+                        </div>
+                     ))}
+                   </div>
+                )}
+                
+                {/* Referral Banner */}
+                <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-purple-700 rounded-2xl p-5 shadow-2xl text-white flex flex-col sm:flex-row items-center justify-between gap-4 border border-indigo-500/20 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-bl-full pointer-events-none"></div>
+                    <div className="flex items-center gap-3.5 relative z-10">
+                        <div className="w-10 h-10 bg-white/10 rounded-xl flex items-center justify-center shrink-0 border border-white/10 shadow-inner">
+                            <Users className="w-5 h-5 text-white" />
+                        </div>
+                        <div>
+                            <h4 className="text-sm font-bold tracking-tight">Earn 10 Free Premium Scans</h4>
+                            <p className="text-xs text-indigo-200 mt-0.5 font-medium">Share your analysis link on LinkedIn or with a friend to unlock free usage.</p>
+                        </div>
+                    </div>
+                    <Button 
+                        onClick={handleShare} 
+                        disabled={sharing}
+                        className="bg-white text-indigo-700 hover:bg-slate-100 hover:text-indigo-800 font-extrabold uppercase text-[9px] tracking-widest shrink-0 h-9 px-5 rounded-lg shadow-xl relative z-10"
+                    >
+                        {sharing ? <Loader2 className="w-4 h-4 animate-spin" /> : shareCopied ? 'Link Copied!' : 'Copy Share Link'}
+                    </Button>
+                </div>
+
+                <ResultsView results={results[activeResultIdx]} onReset={() => { setStatus('IDLE'); setFiles([]); }} handleShare={handleShare} shareCopied={shareCopied} sharing={sharing} />
+              </div>
+            )}
+          </>
+        ) : (
+          <motion.div initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Left side: Account details & security */}
+            <div className="lg:col-span-8 space-y-6">
+              
+              {/* Profile Card */}
+              <div className="p-[1px] bg-gradient-to-b from-white/10 to-transparent rounded-2xl shadow-2xl">
+                <div className="bg-[#0b0f19]/60 backdrop-blur-md rounded-[15px] p-6 border border-white/5 space-y-6">
+                  <div className="flex items-center gap-4">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-indigo-500/20">
+                      {user ? (user.displayName ? user.displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : user.email?.substring(0, 2).toUpperCase()) : 'DS'}
                     </div>
                     <div>
-                        <h4 className="text-sm font-bold tracking-tight">Earn 10 Free Premium Scans</h4>
-                        <p className="text-xs text-indigo-200 mt-0.5 font-medium">Share your analysis link on LinkedIn or with a friend to unlock free usage.</p>
+                      <h2 className="text-xl font-extrabold text-white">{user?.displayName || 'Datta Sable'}</h2>
+                      <p className="text-xs text-slate-400 font-medium mt-0.5">{user?.email || 'seeker@example.com'}</p>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 mt-2 font-mono">
+                        {isOAuthUser ? `Linked via ${user?.providerData?.[0]?.providerId === 'google.com' ? 'Google' : user?.providerData?.[0]?.providerId === 'github.com' ? 'GitHub' : 'OAuth'}` : 'Email/Password Account'}
+                      </span>
                     </div>
+                  </div>
                 </div>
-                <Button 
-                    onClick={handleShare} 
-                    disabled={sharing}
-                    className="bg-white text-indigo-700 hover:bg-slate-100 hover:text-indigo-800 font-extrabold uppercase text-[9px] tracking-widest shrink-0 h-9 px-5 rounded-lg shadow-xl relative z-10"
-                >
-                    {sharing ? <Loader2 className="w-4 h-4 animate-spin" /> : shareCopied ? 'Link Copied!' : 'Copy Share Link'}
-                </Button>
+              </div>
+
+              {/* Password Management */}
+              <div className="p-[1px] bg-gradient-to-b from-white/10 to-transparent rounded-2xl shadow-2xl">
+                <div className="bg-[#0b0f19]/60 backdrop-blur-md rounded-[15px] p-6 border border-white/5 space-y-4">
+                  <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                    <Lock className="w-4 h-4 text-indigo-400" /> Security & Password
+                  </h3>
+                  
+                  {isOAuthUser ? (
+                    <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 text-xs text-slate-400 leading-relaxed font-semibold">
+                      Your account is managed via **{user?.providerData?.[0]?.providerId === 'google.com' ? 'Google' : 'GitHub'} OAuth**. Passwords and security credentials are authenticated directly by your provider.
+                    </div>
+                  ) : (
+                    <form onSubmit={handlePasswordChange} className="space-y-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">New Password</label>
+                          <input 
+                            type="password" 
+                            required 
+                            value={newPassword}
+                            onChange={(e) => setNewPassword(e.target.value)}
+                            placeholder="••••••••" 
+                            className="w-full h-11 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-xs font-semibold" 
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Confirm Password</label>
+                          <input 
+                            type="password" 
+                            required 
+                            value={confirmPassword}
+                            onChange={(e) => setConfirmPassword(e.target.value)}
+                            placeholder="••••••••" 
+                            className="w-full h-11 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-xs font-semibold" 
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end">
+                        <Button type="submit" disabled={passChanging} size="sm" className="h-10 px-5 text-[10px] tracking-widest font-mono font-bold uppercase cursor-pointer">
+                          {passChanging ? 'Updating...' : 'Update Password'}
+                        </Button>
+                      </div>
+                      {passMsg && (
+                        <div className={`p-3 rounded-lg text-[10px] font-bold uppercase font-mono tracking-wider ${passMsg.includes('successfully') ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border border-rose-500/20'}`}>
+                          {passMsg}
+                        </div>
+                      )}
+                    </form>
+                  )}
+                </div>
+              </div>
+
             </div>
 
-            <ResultsView results={results[activeResultIdx]} onReset={() => { setStatus('IDLE'); setFiles([]); }} handleShare={handleShare} shareCopied={shareCopied} sharing={sharing} />
-          </div>
+            {/* Right side: billing, credits, etc */}
+            <div className="lg:col-span-4 space-y-6">
+              
+              {/* Plan Card */}
+              <div className="rounded-2xl border border-white/5 bg-[#0b0f19]/30 backdrop-blur-md p-5 shadow-2xl relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/5 rounded-full blur-xl pointer-events-none"></div>
+                <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2 font-mono">
+                  <Zap className="w-3.5 h-3.5 text-indigo-400" /> Plan & Billing
+                </h3>
+                
+                <div className="p-4 bg-slate-950/40 rounded-xl border border-white/5 mb-4">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-xs font-semibold text-slate-300 font-sans">Active Plan</span>
+                    <span className="text-[10px] font-bold uppercase tracking-widest bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 px-2 py-0.5 rounded-md font-mono">
+                      {credits > 50 ? 'Pro Unlimited' : 'Spark Free'}
+                    </span>
+                  </div>
+                  <p className="text-[10px] text-slate-500 font-medium">Billing Cycle: {credits > 50 ? 'Monthly Recurring' : 'Free tier limitations'}</p>
+                </div>
+
+                <div className="space-y-3 font-semibold text-xs border-b border-white/5 pb-4 mb-4 font-mono">
+                  <div className="flex justify-between items-center text-slate-300">
+                    <span className="font-sans">Scan Credits</span>
+                    <span className="text-white">{credits > 50 ? 'Unlimited' : `${credits} Remaining`}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-300">
+                    <span className="font-sans">PDF Downloads</span>
+                    <span className="text-white">Unlimited</span>
+                  </div>
+                  <div className="flex justify-between items-center text-slate-300">
+                    <span className="font-sans">Cover Letter Edits</span>
+                    <span className="text-white">Unlimited</span>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={() => setShowPaywall(true)}
+                  className="w-full h-10 text-[9px] font-bold tracking-widest uppercase bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-lg cursor-pointer"
+                >
+                  {credits > 50 ? 'Manage Subscription' : 'Upgrade Plan'}
+                </Button>
+              </div>
+
+              {/* Usage telemetry meter */}
+              <div className="rounded-2xl border border-white/5 bg-[#0b0f19]/30 backdrop-blur-md p-5 shadow-2xl">
+                <h3 className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 mb-4 flex items-center gap-2 font-mono">
+                  <BarChart2 className="w-3.5 h-3.5 text-indigo-400" /> Usage Telemetry
+                </h3>
+                
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-1.5 font-mono">
+                      <span className="text-slate-400 font-sans">Monthly Scans</span>
+                      <span className="text-slate-300">{credits > 50 ? '12 / ∞' : `${10 - credits} / 10`}</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: credits > 50 ? '25%' : `${(10 - credits) * 10}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-1.5 font-mono">
+                      <span className="text-slate-400 font-sans">PDF Downloads</span>
+                      <span className="text-slate-300">4 / ∞</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '40%' }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-1.5 font-mono">
+                      <span className="text-slate-400 font-sans">Cover Letter Edits</span>
+                      <span className="text-slate-300">2 / ∞</span>
+                    </div>
+                    <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
+                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '20%' }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </motion.div>
         )}
 
       </div>

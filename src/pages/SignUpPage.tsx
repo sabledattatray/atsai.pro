@@ -3,35 +3,47 @@ import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
 import { auth, googleProvider, githubProvider, signInWithPopup } from '@/lib/firebase';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { Loader2, AlertCircle } from 'lucide-react';
 
-export default function SignInPage() {
+export default function SignUpPage() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('seeker@example.com');
-  const [password, setPassword] = useState('password123');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleSignIn = async (e: React.FormEvent) => {
+  const handleSignUp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
-    setLoading(true);
 
+    if (password !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+    if (password.length < 6) {
+      setErrorMsg('Password must be at least 6 characters.');
+      return;
+    }
+
+    setLoading(true);
     if (auth) {
       try {
-        const result = await signInWithEmailAndPassword(auth, email, password);
-        console.log("Email Sign-In success:", result.user);
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(result.user, { displayName: name });
+        console.log("Email Sign-Up success:", result.user);
         navigate('/app');
       } catch (err: any) {
-        console.error("Email Sign-In failed:", err);
-        setErrorMsg(err.message || 'Incorrect email or password. Please try again.');
+        console.error("Email Sign-Up failed:", err);
+        setErrorMsg(err.message || 'Failed to create account. Please check your credentials and try again.');
       } finally {
         setLoading(false);
       }
     } else {
       // Mock Fallback
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1200));
       console.warn("Firebase Auth is not configured. Redirecting to mock session.");
       navigate('/app');
       setLoading(false);
@@ -168,30 +180,6 @@ export default function SignInPage() {
                 <p className="text-xs text-slate-400 mt-0.5">Align your skills and accomplishments directly with core and secondary JD terms.</p>
               </div>
             </div>
-
-            <div className="flex items-start gap-3 text-sm text-slate-300">
-              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20 mt-0.5">
-                <svg className="w-3 h-3 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                </svg>
-              </div>
-              <div>
-                <p className="font-semibold text-white">AI Bullet Optimizations & Cover Letters</p>
-                <p className="text-xs text-slate-400 mt-0.5">Generate high-impact, metrics-driven bullet points and matching cover letters.</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Trusted by candidates hired at */}
-          <div className="mt-12 pt-6 border-t border-white/5">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-4">Candidates hired at</p>
-            <div className="flex flex-wrap gap-x-6 gap-y-2 opacity-50 select-none items-center">
-              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">GOOGLE</span>
-              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">META</span>
-              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">NETFLIX</span>
-              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">STRIPE</span>
-              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">MICROSOFT</span>
-            </div>
           </div>
         </div>
       </div>
@@ -202,8 +190,8 @@ export default function SignInPage() {
 
         <div className="w-full max-w-md relative z-10">
           <div className="mb-8">
-            <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Welcome back</h1>
-            <p className="text-slate-400 font-medium">Sign in to your account to continue.</p>
+            <h1 className="text-3xl font-extrabold text-white mb-2 tracking-tight">Create your account</h1>
+            <p className="text-slate-400 font-medium">Get started with your free ATS analysis and optimizations.</p>
           </div>
 
           {errorMsg && (
@@ -212,7 +200,18 @@ export default function SignInPage() {
             </div>
           )}
 
-          <form onSubmit={handleSignIn} className="space-y-4">
+          <form onSubmit={handleSignUp} className="space-y-4">
+            <div>
+              <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 font-mono">Full Name</label>
+              <input 
+                type="text" 
+                placeholder="John Doe" 
+                required
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full h-12 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium"
+              />
+            </div>
             <div>
               <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 font-mono">Email Address</label>
               <input 
@@ -224,23 +223,33 @@ export default function SignInPage() {
                 className="w-full h-12 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium"
               />
             </div>
-            <div>
-              <div className="flex justify-between items-center mb-2 font-mono text-[10px]">
-                 <label className="block font-bold uppercase tracking-widest text-slate-500">Password</label>
-                 <a href="#" className="font-bold uppercase tracking-wider text-indigo-400 hover:text-indigo-300">Forgot password?</a>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 font-mono">Password</label>
+                <input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full h-12 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium"
+                />
               </div>
-              <input 
-                type="password" 
-                placeholder="••••••••" 
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full h-12 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium"
-              />
+              <div>
+                <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 font-mono">Confirm</label>
+                <input 
+                  type="password" 
+                  placeholder="••••••••" 
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full h-12 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all font-medium"
+                />
+              </div>
             </div>
             
             <Button type="submit" disabled={loading} className="w-full h-12 text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl mt-6 cursor-pointer">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Sign In'}
+              {loading ? <Loader2 className="w-4 h-4 animate-spin mx-auto" /> : 'Create Account'}
             </Button>
           </form>
 
@@ -250,7 +259,7 @@ export default function SignInPage() {
               <div className="w-full border-t border-white/5"></div>
             </div>
             <div className="relative flex justify-center text-[9px] font-bold uppercase tracking-widest font-mono">
-              <span className="bg-[#030712] px-3.5 text-slate-500">Or continue with</span>
+              <span className="bg-[#030712] px-3.5 text-slate-500">Or sign up with</span>
             </div>
           </div>
 
@@ -283,7 +292,7 @@ export default function SignInPage() {
           </div>
 
           <div className="mt-8 text-center text-xs text-slate-500 font-medium">
-            Don't have an account? <Link to="/signup" className="text-indigo-400 font-bold hover:text-indigo-300">Create one for free</Link>
+            Already have an account? <Link to="/signin" className="text-indigo-400 font-bold hover:text-indigo-300">Sign In</Link>
           </div>
         </div>
       </div>

@@ -339,7 +339,7 @@ export default function Layout() {
                 <ResumesMenu />
                 <div className="h-4 w-px bg-white/10" />
                 <Link to="/signin" className="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-500 after:transition-all">Sign In</Link>
-                <Link to="/app">
+                <Link to="/signup">
                   <Button className="font-bold tracking-widest uppercase text-[10px] px-6 h-10">Get Started</Button>
                 </Link>
               </>
@@ -387,6 +387,13 @@ export default function Layout() {
                           >
                             <LayoutDashboard className="w-3.5 h-3.5 text-indigo-400" /> Dashboard
                           </Link>
+                          <Link 
+                            to="/app?tab=settings" 
+                            onClick={() => setIsDropdownOpen(false)}
+                            className="flex items-center gap-2 text-xs text-slate-300 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all font-semibold"
+                          >
+                            <User className="w-3.5 h-3.5 text-indigo-400" /> Account Settings
+                          </Link>
                           <button 
                             onClick={handleLogout}
                             className="w-full flex items-center gap-2 text-xs text-rose-400 hover:text-rose-300 px-2 py-1.5 rounded-lg hover:bg-rose-500/10 transition-all text-left cursor-pointer font-bold border-none bg-transparent"
@@ -423,7 +430,7 @@ export default function Layout() {
                 <a href="/#cover-letters" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Cover Letters</a>
                 <Link to="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Resumes</Link>
                 <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Sign In</Link>
-                <Link to="/app" onClick={() => setIsMobileMenuOpen(false)} className="mt-4">
+                <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)} className="mt-4">
                   <Button size="lg" className="w-full text-xs tracking-wider">GET STARTED FREE</Button>
                 </Link>
               </>
@@ -444,6 +451,15 @@ export default function Layout() {
                 <Link to="/career-hub" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   Career Pathways
                 </Link>
+                <Link to="/app?tab=settings" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                  <User className="w-6 h-6 text-indigo-400" /> Account Settings
+                </Link>
+                <button 
+                  onClick={() => { setIsMobileMenuOpen(false); handleLogout(); }}
+                  className="pb-4 flex items-center gap-3 text-left w-full border-none bg-transparent font-extrabold text-xl text-rose-400 cursor-pointer uppercase tracking-tight"
+                >
+                  <X className="w-6 h-6 text-rose-500" /> Sign Out
+                </button>
               </>
             )}
           </nav>
