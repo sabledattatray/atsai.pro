@@ -43,7 +43,11 @@ export default function SignUpPage() {
         navigate('/app');
       } catch (err: any) {
         console.error("Email Sign-Up failed:", err);
-        setErrorMsg(err.message || 'Failed to create account. Please check your credentials and try again.');
+        if (err.code === 'auth/operation-not-allowed') {
+          setErrorMsg('Email/Password provider is not enabled in your Firebase Console. Please go to Firebase Console > Authentication > Sign-in method, select Email/Password under "Add new provider", toggle "Enable", and click Save.');
+        } else {
+          setErrorMsg(err.message || 'Failed to create account. Please check your credentials and try again.');
+        }
       } finally {
         setLoading(false);
       }

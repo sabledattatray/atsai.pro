@@ -25,7 +25,11 @@ export default function SignInPage() {
         navigate('/app');
       } catch (err: any) {
         console.error("Email Sign-In failed:", err);
-        setErrorMsg(err.message || 'Incorrect email or password. Please try again.');
+        if (err.code === 'auth/operation-not-allowed') {
+          setErrorMsg('Email/Password provider is not enabled in your Firebase Console. Please go to Firebase Console > Authentication > Sign-in method, select Email/Password under "Add new provider", toggle "Enable", and click Save.');
+        } else {
+          setErrorMsg(err.message || 'Incorrect email or password. Please try again.');
+        }
       } finally {
         setLoading(false);
       }
