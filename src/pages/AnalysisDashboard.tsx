@@ -329,6 +329,42 @@ export default function AnalysisDashboard() {
     }
   };
 
+  const handleRefreshVerification = async () => {
+    if (auth && auth.currentUser) {
+      setResendLoading(true);
+      setResendMsg('');
+      try {
+        await auth.currentUser.reload();
+        const freshUser = auth.currentUser;
+        setUser({ ...freshUser });
+        if (freshUser.emailVerified) {
+          // Sync with backend
+          await fetch('/api/admin/users/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              uid: freshUser.uid,
+              email: freshUser.email,
+              emailVerified: true
+            })
+          });
+          window.location.reload();
+        } else {
+          setResendMsg('Email is still unverified. Please check your inbox.');
+          setTimeout(() => setResendMsg(''), 4000);
+        }
+      } catch (err: any) {
+        console.error("Failed to reload user session:", err);
+        setResendMsg(err.message || 'Failed to refresh verification status.');
+        setTimeout(() => setResendMsg(''), 4000);
+      } finally {
+        setResendLoading(false);
+      }
+    } else {
+      window.location.reload();
+    }
+  };
+
   const fetchAdminUsers = async () => {
     setAdminLoading(true);
     try {
@@ -426,13 +462,39 @@ export default function AnalysisDashboard() {
 
           <div className="space-y-3 pt-2">
             <Button 
-              onClick={() => window.location.reload()}
+              onClick={handleRefreshVerification}
+              disabled={resendLoading}
               className="w-full h-11 text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl cursor-pointer"
             >
-              I have verified - Refresh
+              {resendLoading ? 'Checking...' : 'I have verified - Refresh'}
             </Button>
             
-            <div className="flex justify-between items-center gap-4 text-[10px] font-bold uppercase tracking-widest font-mono">
+            {window.location.hostname === 'localhost' && (
+              <button
+                onClick={async () => {
+                  try {
+                    await fetch('/api/admin/users/register', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        uid: user.uid,
+                        email: user.email,
+                        emailVerified: true
+                      })
+                    });
+                    alert("Email verification bypassed in dev mode. Reloading page...");
+                    window.location.reload();
+                  } catch (err) {
+                    console.error("Failed to bypass:", err);
+                  }
+                }}
+                className="w-full h-11 text-xs font-bold uppercase tracking-wider bg-slate-900 border border-white/10 hover:bg-slate-800 text-slate-400 hover:text-white rounded-xl cursor-pointer mt-2"
+              >
+                Bypass Verification (Local Dev Mode)
+              </button>
+            )}
+            
+            <div className="flex justify-between items-center gap-4 text-[10px] font-bold uppercase tracking-widest font-mono pt-2">
               <button
                 onClick={handleResendVerification}
                 disabled={resendLoading}
