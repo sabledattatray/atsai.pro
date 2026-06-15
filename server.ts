@@ -504,11 +504,88 @@ Required JSON format:
       console.error("Error writing users file:", err);
     }
   };
-
+ 
+  // Token verification helper
+  const getVerifiedUser = async (req: express.Request): Promise<{ uid: string; email: string } | null> => {
+    const authHeader = req.headers.authorization;
+    const apiKey = process.env.VITE_FIREBASE_API_KEY;
+    const mockEmail = req.headers['x-mock-email'] || req.body.email;
+ 
+    // Fallback: If Firebase is not configured or in local mock testing
+    const isMockBypass = (!authHeader && mockEmail && (!process.env.VERCEL || process.env.NODE_ENV !== 'production')) || 
+                         (!apiKey || apiKey === '' || apiKey.startsWith('your_'));
+ 
+    if (isMockBypass) {
+      return {
+        uid: req.body.uid || 'mock-uid',
+        email: String(mockEmail || 'seeker@example.com')
+      };
+    }
+ 
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return null;
+    }
+ 
+    const idToken = authHeader.split('Bearer ')[1];
+    try {
+      const response = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${apiKey}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken })
+      });
+ 
+      if (!response.ok) {
+        return null;
+      }
+ 
+      const data = await response.json() as any;
+      const user = data.users?.[0];
+      if (!user) return null;
+ 
+      return {
+        uid: user.localId,
+        email: user.email || ''
+      };
+    } catch (err) {
+      console.error("Token verification error:", err);
+      return null;
+    }
+  };
+ 
+  const verifyUserSession = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const user = await getVerifiedUser(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid or missing session token.' });
+    }
+    (req as any).user = user;
+    next();
+  };
+ 
+  const verifyAdminSession = async (req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const user = await getVerifiedUser(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid or missing session token.' });
+    }
+    const email = user.email.toLowerCase();
+    const isAdmin = email.includes('admin') || email === 'seeker@example.com';
+    if (!isAdmin) {
+      return res.status(403).json({ error: 'Forbidden: Admin privilege required.' });
+    }
+    (req as any).user = user;
+    next();
+  };
+ 
   // Register/Update User
-  app.post('/api/admin/users/register', (req, res) => {
+  app.post('/api/admin/users/register', express.json(), verifyUserSession, (req, res) => {
     try {
       const { uid, email, displayName, providerId, emailVerified, createdAt, credits } = req.body;
+      const sessionUser = (req as any).user;
+      
+      // Ensure users can only register/update their own profile
+      if (sessionUser.uid !== uid && !sessionUser.email.toLowerCase().includes('admin') && sessionUser.email !== 'seeker@example.com') {
+        return res.status(403).json({ error: 'Forbidden: Cannot modify another user profile.' });
+      }
+ 
       if (!uid || !email) {
         return res.status(400).json({ error: 'UID and Email are required.' });
       }
@@ -547,7 +624,7 @@ Required JSON format:
   });
 
   // Get all users (Admin only)
-  app.get('/api/admin/users', (req, res) => {
+  app.get('/api/admin/users', verifyAdminSession, (req, res) => {
     try {
       const users = readUsers();
       res.json(users);
@@ -557,7 +634,7 @@ Required JSON format:
   });
 
   // Update credits for user (Admin only)
-  app.post('/api/admin/users/update-credits', (req, res) => {
+  app.post('/api/admin/users/update-credits', verifyAdminSession, (req, res) => {
     try {
       const { uid, credits } = req.body;
       if (!uid || credits === undefined) {

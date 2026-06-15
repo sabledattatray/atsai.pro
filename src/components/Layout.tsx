@@ -268,9 +268,20 @@ export default function Layout() {
   const registerUserOnBackend = async (firebaseUser: any) => {
     if (!firebaseUser) return;
     try {
+      const idToken = typeof firebaseUser.getIdToken === 'function' ? await firebaseUser.getIdToken() : '';
+      const headers: Record<string, string> = {
+        'Content-Type': 'application/json'
+      };
+      
+      if (idToken) {
+        headers['Authorization'] = `Bearer ${idToken}`;
+      } else {
+        headers['x-mock-email'] = firebaseUser.email || 'seeker@example.com';
+      }
+
       await fetch('/api/admin/users/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           uid: firebaseUser.uid,
           email: firebaseUser.email,

@@ -329,6 +329,23 @@ export default function AnalysisDashboard() {
     }
   };
 
+  const getAdminHeaders = async () => {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json'
+    };
+    if (auth && auth.currentUser) {
+      try {
+        const token = await auth.currentUser.getIdToken();
+        headers['Authorization'] = `Bearer ${token}`;
+      } catch (err) {
+        console.error("Failed to retrieve ID token:", err);
+      }
+    } else {
+      headers['x-mock-email'] = user?.email || 'seeker@example.com';
+    }
+    return headers;
+  };
+
   const handleRefreshVerification = async () => {
     if (auth && auth.currentUser) {
       setResendLoading(true);
@@ -339,9 +356,10 @@ export default function AnalysisDashboard() {
         setUser({ ...freshUser });
         if (freshUser.emailVerified) {
           // Sync with backend
+          const headers = await getAdminHeaders();
           await fetch('/api/admin/users/register', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers,
             body: JSON.stringify({
               uid: freshUser.uid,
               email: freshUser.email,
@@ -368,7 +386,10 @@ export default function AnalysisDashboard() {
   const fetchAdminUsers = async () => {
     setAdminLoading(true);
     try {
-      const resp = await fetch('/api/admin/users');
+      const headers = await getAdminHeaders();
+      const resp = await fetch('/api/admin/users', {
+        headers
+      });
       if (resp.ok) {
         const data = await resp.json();
         setAdminUsers(data);
@@ -383,9 +404,10 @@ export default function AnalysisDashboard() {
   const handleUpdateUserCredits = async (uid: string, currentCredits: number, offset: number) => {
     const newCredits = Math.max(0, currentCredits + offset);
     try {
+      const headers = await getAdminHeaders();
       const resp = await fetch('/api/admin/users/update-credits', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ uid, credits: newCredits })
       });
       if (resp.ok) {
