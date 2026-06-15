@@ -26,6 +26,58 @@ export default function SignInPage() {
             <Logo invertText />
           </Link>
         </div>
+
+        {/* Premium live ATS analyzer stats card */}
+        <div className="relative z-10 flex-1 flex flex-col justify-center py-12">
+          <div className="glass-panel p-6 rounded-2xl border border-white/10 max-w-sm relative overflow-hidden shadow-2xl backdrop-blur-md">
+             {/* Gradient glow inside the card */}
+             <div className="absolute -right-20 -top-20 w-40 h-40 bg-indigo-500/10 rounded-full blur-2xl pointer-events-none"></div>
+             
+             <div className="flex items-center justify-between mb-6">
+                <div className="flex items-center gap-2">
+                   <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                   <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 font-mono">Live ATS Analyzer</span>
+                </div>
+                <span className="text-[10px] font-bold text-indigo-400 font-mono">V2.4.0</span>
+             </div>
+
+             <div className="space-y-4">
+                <div>
+                   <div className="flex justify-between items-end mb-1.5">
+                      <span className="text-xs font-semibold text-slate-300">ATS Readability Rate</span>
+                      <span className="text-sm font-black text-emerald-400 font-mono">98%</span>
+                   </div>
+                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{ width: '98%' }}></div>
+                   </div>
+                </div>
+
+                <div>
+                   <div className="flex justify-between items-end mb-1.5">
+                      <span className="text-xs font-semibold text-slate-300">Semantic Keyword Match</span>
+                      <span className="text-sm font-black text-indigo-400 font-mono">92%</span>
+                   </div>
+                   <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
+                      <div className="h-full bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full" style={{ width: '92%' }}></div>
+                   </div>
+                </div>
+
+                <div className="h-px bg-white/5 my-4" />
+
+                <div className="grid grid-cols-2 gap-4">
+                   <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1">Total Scans</p>
+                      <p className="text-lg font-black text-white font-mono">54,281</p>
+                   </div>
+                   <div className="bg-white/5 p-3 rounded-xl border border-white/5">
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-1">AI Optimizations</p>
+                      <p className="text-lg font-black text-white font-mono">124k+</p>
+                   </div>
+                </div>
+             </div>
+          </div>
+        </div>
+
         <div className="relative z-10 max-w-md">
           <h2 className="text-4xl font-black mb-6 leading-tight text-white tracking-tight">Join the top 1% of candidates.</h2>
           <p className="text-slate-400 font-medium leading-relaxed">Our semantic AI has analyzed over 50,000 successful resumes, reverse-engineering the exact patterns that get past modern ATS filters.</p>
