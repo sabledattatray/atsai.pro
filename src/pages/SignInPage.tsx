@@ -81,6 +81,56 @@ export default function SignInPage() {
         <div className="relative z-10 max-w-md">
           <h2 className="text-4xl font-black mb-6 leading-tight text-white tracking-tight">Join the top 1% of candidates.</h2>
           <p className="text-slate-400 font-medium leading-relaxed">Our semantic AI has analyzed over 50,000 successful resumes, reverse-engineering the exact patterns that get past modern ATS filters.</p>
+          
+          <div className="mt-8 space-y-4">
+            <div className="flex items-start gap-3 text-sm text-slate-300">
+              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20 mt-0.5">
+                <svg className="w-3 h-3 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white">Live ATS Readability Audit</p>
+                <p className="text-xs text-slate-400 mt-0.5">Detect parsing blockers, formatting issues, and structural layout errors instantly.</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start gap-3 text-sm text-slate-300">
+              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-500/10 flex items-center justify-center border border-indigo-500/20 mt-0.5">
+                <svg className="w-3 h-3 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white">Semantic Keyword Matching</p>
+                <p className="text-xs text-slate-400 mt-0.5">Align your skills and accomplishments directly with core and secondary JD terms.</p>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 text-sm text-slate-300">
+              <div className="flex-shrink-0 w-5 h-5 rounded-full bg-purple-500/10 flex items-center justify-center border border-purple-500/20 mt-0.5">
+                <svg className="w-3 h-3 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <div>
+                <p className="font-semibold text-white">AI Bullet Optimizations & Cover Letters</p>
+                <p className="text-xs text-slate-400 mt-0.5">Generate high-impact, metrics-driven bullet points and matching cover letters.</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Trusted by candidates hired at */}
+          <div className="mt-12 pt-6 border-t border-white/5">
+            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500 font-mono mb-4">Candidates hired at</p>
+            <div className="flex flex-wrap gap-x-6 gap-y-2 opacity-50 select-none items-center">
+              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">GOOGLE</span>
+              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">META</span>
+              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">NETFLIX</span>
+              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">STRIPE</span>
+              <span className="text-xs font-black tracking-widest text-slate-300 hover:text-white transition-colors">MICROSOFT</span>
+            </div>
+          </div>
         </div>
       </div>
 
