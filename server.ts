@@ -11,8 +11,8 @@ import fs from 'fs';
 dotenv.config();
 
 const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID || 'rzp_test_T0OhZChna7TYPH',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || 'UaudGTRr7qZlTJ8PSIE2qBhx'
+  key_id: process.env.RAZORPAY_KEY_ID || '',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || ''
 });
 
 let ai: GoogleGenAI | null = null;
@@ -86,7 +86,7 @@ app.get('/api/share/:id', (req, res) => {
 // API Route for Razorpay Checkout
 app.post('/api/checkout', async (req, res) => {
   try {
-    if (!process.env.RAZORPAY_KEY_ID && !req.body.mock && process.env.RAZORPAY_KEY_ID !== 'rzp_test_T0OhZChna7TYPH') {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
         // Fallback to mock session if key doesn't exist
         return res.json({ url: '/app?payment_success=true' });
     }
@@ -106,7 +106,7 @@ app.post('/api/checkout', async (req, res) => {
       orderId: order.id,
       amount: order.amount,
       currency: order.currency,
-      keyId: process.env.RAZORPAY_KEY_ID || 'rzp_test_T0OhZChna7TYPH'
+      keyId: process.env.RAZORPAY_KEY_ID || ''
     });
   } catch (error: any) {
     console.error('Razorpay error:', error);
@@ -118,7 +118,11 @@ app.post('/api/checkout', async (req, res) => {
 app.post('/api/verify-payment', (req, res) => {
     try {
         const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
-        const secret = process.env.RAZORPAY_KEY_SECRET || 'UaudGTRr7qZlTJ8PSIE2qBhx';
+        const secret = process.env.RAZORPAY_KEY_SECRET || '';
+        
+        if (!secret) {
+          return res.status(500).json({ error: 'Payment verification secret is not configured.' });
+        }
         
         const shasum = crypto.createHmac('sha256', secret);
         shasum.update(`${razorpay_order_id}|${razorpay_payment_id}`);
