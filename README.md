@@ -10,6 +10,25 @@ It now features a comprehensive **Firebase Authentication Suite** (Google, GitHu
 
 ---
 
+## 📸 Application Gallery
+
+### Landing Workspace
+![Landing Page](./public/landing_page.png)
+
+### ATS Scoring Dashboard
+![Analysis Dashboard](./public/dashboard.png)
+
+### System Admin Portal
+![Admin Panel](./public/admin_panel.png)
+
+### Authentication Interface
+![Sign In Page](./public/signin_page.png)
+
+### Pro Upgrades & Pricing
+![Pricing Page](./public/pricing_page.png)
+
+---
+
 ## 🌟 Core Features
 
 ### 🔍 ATS Simulator & AI scoring
