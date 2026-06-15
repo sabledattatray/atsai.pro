@@ -3,8 +3,8 @@ import { UploadCloud, FileText, User, CheckCircle2, AlertCircle, ArrowRight, Loa
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useLocation } from 'react-router-dom';
-import { auth, onAuthStateChanged } from '@/lib/firebase';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { auth, onAuthStateChanged, signOut } from '@/lib/firebase';
 import { updatePassword, sendEmailVerification } from 'firebase/auth';
 
 declare global {
@@ -22,6 +22,7 @@ interface TimelineEvent {
 }
 
 export default function AnalysisDashboard() {
+  const navigate = useNavigate();
   const [status, setStatus] = useState<AnalysisState>('IDLE');
   const [jobDescription, setJobDescription] = useState('');
   const [files, setFiles] = useState<File[]>([]);
@@ -398,6 +399,71 @@ export default function AnalysisDashboard() {
       setPassChanging(false);
     }
   };
+
+  if (user && !isOAuthUser && !user.emailVerified) {
+    return (
+      <div className="min-h-screen bg-[#030712] flex items-center justify-center p-6 text-slate-100 font-sans relative">
+        <div className="absolute inset-0 z-0 opacity-15 pointer-events-none bg-grid-pattern"></div>
+        <div className="absolute top-[20%] left-[20%] w-[350px] h-[350px] bg-indigo-600/10 rounded-full blur-[100px] pointer-events-none"></div>
+        
+        <div className="w-full max-w-md relative z-10 p-8 bg-[#0b0f19]/60 border border-white/10 rounded-2xl shadow-2xl backdrop-blur-md text-center space-y-6">
+          <div className="w-12 h-12 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto border border-amber-500/20 shadow-[0_0_15px_rgba(245,158,11,0.15)]">
+            <AlertTriangle className="w-6 h-6 text-amber-400" />
+          </div>
+          
+          <div className="space-y-2">
+            <h2 className="text-2xl font-black text-white tracking-tight">Verify your email address</h2>
+            <p className="text-xs text-slate-400 leading-relaxed font-medium">
+              We have sent a verification link to <strong className="text-slate-200">{user.email}</strong>. Please check your inbox and click the link to activate your account.
+            </p>
+          </div>
+
+          <div className="bg-slate-950/40 p-4 rounded-xl border border-white/5 space-y-3 font-semibold text-xs text-left">
+            <p className="text-slate-400 leading-normal font-medium">
+              Once you have clicked the verification link, refresh this page to access your workspace.
+            </p>
+          </div>
+
+          <div className="space-y-3 pt-2">
+            <Button 
+              onClick={() => window.location.reload()}
+              className="w-full h-11 text-xs font-bold uppercase tracking-wider bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 rounded-xl cursor-pointer"
+            >
+              I have verified - Refresh
+            </Button>
+            
+            <div className="flex justify-between items-center gap-4 text-[10px] font-bold uppercase tracking-widest font-mono">
+              <button
+                onClick={handleResendVerification}
+                disabled={resendLoading}
+                className="text-indigo-400 hover:text-indigo-300 transition-colors cursor-pointer bg-transparent border-none p-0"
+              >
+                {resendLoading ? 'Sending...' : 'Resend Email'}
+              </button>
+              
+              <button
+                onClick={async () => {
+                  if (auth) {
+                    await signOut(auth);
+                    navigate('/signin');
+                  }
+                }}
+                className="text-rose-400 hover:text-rose-300 transition-colors cursor-pointer bg-transparent border-none p-0"
+              >
+                Sign Out
+              </button>
+            </div>
+            
+            {resendMsg && (
+              <div className="p-2.5 rounded-lg text-[9px] font-bold uppercase font-mono tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-center">
+                {resendMsg}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#030712] selection:bg-indigo-500/20 pb-20 font-sans text-slate-100">
