@@ -93,8 +93,8 @@ VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id_here
 VITE_FIREBASE_APP_ID=your_app_id_here
 
 # Razorpay credentials (falls back to mock payment if keys are default test keys)
-RAZORPAY_KEY_ID=rzp_test_T0OhZChna7TYPH
-RAZORPAY_KEY_SECRET=UaudGTRr7qZlTJ8PSIE2qBhx
+RAZORPAY_KEY_ID=your_razorpay_key_id_here
+RAZORPAY_KEY_SECRET=your_razorpay_key_secret_here
 RAZORPAY_WEBHOOK_SECRET=your_webhook_secret_here
 ```
 
