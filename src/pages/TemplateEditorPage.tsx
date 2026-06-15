@@ -151,8 +151,8 @@ export default function TemplateEditorPage() {
       pdf.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
       
-      // Subsequent pages if height overflows
-      while (heightLeft > 0) {
+      // Subsequent pages if height overflows (with a 3mm threshold to prevent empty pages from rounding issues)
+      while (heightLeft > 3) {
         position = heightLeft - imgHeight;
         pdf.addPage();
         pdf.addImage(dataUrl, 'JPEG', 0, position, imgWidth, imgHeight);
@@ -972,9 +972,9 @@ export function CreativeTemplate({ data, color, spacingClass, paddingClass, them
                <div className={spacingClass}>
                  {data.experience.map((exp: any, i: number) => (
                    <div key={i} className="relative">
-                      <div className="flex items-baseline gap-4 mb-2">
-                         <h3 className={`font-bold text-xl ${isDark ? 'text-white' : 'text-gray-900'}`}>{exp.company}</h3>
-                         <span className="text-sm font-bold uppercase tracking-wider px-2 py-0.5 rounded-full" style={{ backgroundColor: `${primaryColor}10`, color: primaryColor }}>{exp.duration}</span>
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                         <h3 className={`font-bold text-xl ${isDark ? 'text-white' : 'text-gray-900'} leading-tight`}>{exp.company}</h3>
+                         <span className="text-sm font-bold uppercase tracking-wider px-2 py-0.5 rounded-full shrink-0" style={{ backgroundColor: `${primaryColor}10`, color: primaryColor }}>{exp.duration}</span>
                       </div>
                       <p className={`text-lg font-medium ${isDark ? 'text-slate-400' : 'text-gray-600'} mb-4`}>{exp.role}</p>
                       <p className={`${isDark ? 'text-slate-300' : 'text-gray-700'} leading-relaxed text-[0.95em] whitespace-pre-wrap`}>{exp.description}</p>
@@ -1161,7 +1161,7 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass, them
         <div className={spacingClass}>
           {data.experience.map((exp: any, i: number) => (
             <div key={i} className="mb-6">
-              <div className="flex justify-between items-baseline mb-1">
+              <div className="flex justify-between items-start mb-1">
                  <h3 className="font-bold text-[1.15em]">{exp.company}</h3>
                  <span className="text-[0.9em] font-bold">{exp.duration}</span>
               </div>
@@ -1183,7 +1183,7 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass, them
         <h2 className={`text-xl font-bold uppercase tracking-widest mb-4 border-b ${isDark ? 'border-stone-800' : 'border-stone-300'} pb-1`} style={{ color: primaryColor }}>Education</h2>
         <div className={spacingClass}>
           {data.education.map((edu: any, i: number) => (
-            <div key={i} className="flex justify-between items-baseline mb-4">
+            <div key={i} className="flex justify-between items-start mb-4">
                <div>
                  <p className="font-bold text-[1.05em] mb-1">{edu.institution}</p>
                  <p className={`italic ${isDark ? 'text-stone-400' : 'text-stone-700'}`}>{edu.degree}</p>
