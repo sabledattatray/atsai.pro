@@ -35,13 +35,37 @@ export default function TemplateEditorPage() {
     const element = pdfRef.current;
     if (!element) return;
     
-    const inner = element.firstElementChild as HTMLElement;
+    const inner = element.querySelector(':scope > :not(.pdf-exclude)') as HTMLElement;
     if (!inner) return;
     
+    // Save original styles
     const originalHeight = element.style.height;
+    const originalInnerHeight = inner.style.height;
+    const originalInnerOverflow = inner.style.overflow;
+    
+    // Remove height and overflow restrictions to measure natural content height
     element.style.height = 'auto';
+    inner.style.height = 'auto';
+    inner.style.overflow = 'visible';
+    
+    // Measure natural height of the template content
     const contentHeight = inner.offsetHeight;
+    const scrollHeightVal = inner.scrollHeight;
+    console.log("DEBUG HEIGHT MEASUREMENT:", {
+      contentHeight,
+      scrollHeightVal,
+      innerChildren: Array.from(inner.children).map((c: any) => ({
+        tag: c.tagName,
+        class: c.className,
+        offsetHeight: c.offsetHeight,
+        scrollHeight: c.scrollHeight
+      }))
+    });
+    
+    // Restore original styles
     element.style.height = originalHeight;
+    inner.style.height = originalInnerHeight;
+    inner.style.overflow = originalInnerOverflow;
     
     const pxPageHeight = pageSize === 'a4' ? 1123 : 1056;
     const count = Math.max(1, Math.ceil(contentHeight / pxPageHeight));

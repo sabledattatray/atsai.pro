@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Copy, CheckCircle2, FileText, Sparkles, Zap, Briefcase, Camera, Trash2, Printer, Download } from 'lucide-react';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, Copy, CheckCircle2, FileText, Sparkles, Zap, Briefcase, Camera, Trash2, Printer, Download, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { coverLetterTemplates, slugify } from '../data/coverLetters';
 import { generateCoverLetter, CoverLetterStyle, getBaseRole, CoverLetterStructuredContent } from '../utils/coverLetterGenerator';
@@ -19,6 +19,10 @@ const THEME_COLORS = {
 
 export default function CoverLetterViewer() {
   const { slug } = useParams<{ slug: string }>();
+  const [searchParams] = useSearchParams();
+  const initialTheme = (searchParams.get('theme') || 'light') as 'light' | 'dark';
+  const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme);
+
   const [templateName, setTemplateName] = useState<string>('');
   const [selectedStyle, setSelectedStyle] = useState<CoverLetterStyle>('Professional');
   const [content, setContent] = useState<CoverLetterStructuredContent | null>(null);
@@ -147,28 +151,56 @@ export default function CoverLetterViewer() {
     return <div className="p-20 text-center">Loading...</div>;
   }
 
-  const themeClasses = THEME_COLORS[colorTheme];
+  const getHeaderThemeClasses = () => {
+    if (theme === 'dark' && colorTheme === 'classic') {
+      return {
+        bg: 'bg-slate-950',
+        text: 'text-white',
+        border: 'border-slate-800',
+        accent: 'text-slate-400'
+      };
+    }
+    return THEME_COLORS[colorTheme];
+  };
+
+  const themeClasses = getHeaderThemeClasses();
 
   return (
-    <div className="min-h-screen bg-[#F8F9FA] pb-24 print:bg-white print:pb-0">
+    <div className={`min-h-screen pb-24 print:bg-white print:pb-0 transition-colors duration-300 ${theme === 'dark' ? 'bg-[#0f172a] text-slate-100' : 'bg-[#F8F9FA] text-gray-900'}`}>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-30 print:hidden">
+      <div className={`sticky top-0 z-30 print:hidden transition-colors duration-300 border-b ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
         <div className="container mx-auto px-4 max-w-7xl py-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-4">
-            <Link to="/" className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-600">
+            <Link to="/" className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${theme === 'dark' ? 'bg-slate-800 hover:bg-slate-700 text-slate-350' : 'bg-gray-100 hover:bg-gray-200 text-gray-600'}`}>
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-gray-900">{templateName} Editor</h1>
-              <p className="text-xs text-gray-500 font-medium tracking-wide">Edit exactly what you want, directly on the page.</p>
+              <h1 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{templateName} Editor</h1>
+              <p className={`text-xs font-medium tracking-wide ${theme === 'dark' ? 'text-slate-400' : 'text-gray-500'}`}>Edit exactly what you want, directly on the page.</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline" onClick={handlePrint} className="gap-2" disabled={isGeneratingPdf}>
+            {/* Quick theme toggler */}
+            <div className={`flex p-0.5 rounded-lg border ${theme === 'dark' ? 'bg-slate-800 border-slate-700' : 'bg-gray-100 border-gray-200'}`}>
+               <button 
+                 onClick={() => setTheme('light')} 
+                 className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${theme === 'light' ? 'bg-white shadow text-blue-600 font-bold' : 'text-gray-500 hover:text-gray-800'}`}
+               >
+                  <Sun className="w-3.5 h-3.5" /> Light
+               </button>
+               <button 
+                 onClick={() => setTheme('dark')} 
+                 className={`flex items-center gap-1.5 px-3 py-1 rounded-md text-[10px] font-bold uppercase transition-all cursor-pointer ${theme === 'dark' ? 'bg-slate-900 shadow text-blue-600 font-bold' : 'text-gray-500 hover:text-gray-300'}`}
+               >
+                  <Moon className="w-3.5 h-3.5" /> Dark
+               </button>
+            </div>
+
+            <Button variant="outline" onClick={handlePrint} className={`gap-2 ${theme === 'dark' ? 'border-slate-750 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:text-white' : ''}`} disabled={isGeneratingPdf}>
               {isGeneratingPdf ? <CheckCircle2 className="w-4 h-4 animate-pulse" /> : <Download className="w-4 h-4" />}
               {isGeneratingPdf ? 'Generating...' : 'Download PDF'}
             </Button>
-            <Button onClick={handleCopy} className="gap-2 bg-black hover:bg-gray-800">
+            <Button onClick={handleCopy} className={`gap-2 ${theme === 'dark' ? 'bg-blue-600 hover:bg-blue-750 text-white' : 'bg-black hover:bg-gray-800'}`}>
               {copied ? <CheckCircle2 className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
               {copied ? 'Copied!' : 'Copy Text'}
             </Button>
@@ -181,18 +213,18 @@ export default function CoverLetterViewer() {
         {/* Controls Sidebar */}
         <div className="w-full lg:w-80 shrink-0 flex flex-col gap-6 print:hidden sticky top-32">
           
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h3 className="font-bold text-gray-900 text-sm tracking-wide">Writing Style</h3>
+          <div className={`rounded-xl shadow-sm border overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-900 border-slate-850' : 'bg-white border-gray-200'}`}>
+            <div className={`p-4 border-b transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-850 border-slate-800' : 'bg-gray-50 border-gray-100'}`}>
+              <h3 className={`font-bold text-sm tracking-wide ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Writing Style</h3>
             </div>
             <div className="flex flex-col p-2 space-y-1">
               {(['Professional', 'Creative', 'Modern'] as CoverLetterStyle[]).map(style => (
                 <button
                   key={style}
                   onClick={() => setSelectedStyle(style)}
-                  className={`flex items-center gap-3 p-3 rounded-lg text-left transition-colors font-medium text-sm ${selectedStyle === style ? 'bg-blue-50 text-[#1A66FF] border border-blue-100' : 'text-gray-600 hover:bg-gray-100 border border-transparent'}`}
+                  className={`flex items-center gap-3 p-3 rounded-lg text-left transition-colors font-medium text-sm ${selectedStyle === style ? (theme === 'dark' ? 'bg-blue-950/30 text-blue-400 border border-blue-500/20' : 'bg-blue-50 text-[#1A66FF] border border-blue-100') : (theme === 'dark' ? 'text-slate-350 hover:bg-slate-800 border border-transparent' : 'text-gray-600 hover:bg-gray-100 border border-transparent')}`}
                 >
-                  <div className={`p-1.5 rounded-md ${selectedStyle === style ? 'bg-[#1A66FF] text-white shadow-sm' : 'bg-gray-200 text-gray-500'}`}>
+                  <div className={`p-1.5 rounded-md ${selectedStyle === style ? (theme === 'dark' ? 'bg-blue-600 text-white shadow-sm' : 'bg-[#1A66FF] text-white shadow-sm') : (theme === 'dark' ? 'bg-slate-800 text-slate-500' : 'bg-gray-200 text-gray-500')}`}>
                     {getStyleIcon(style)}
                   </div>
                   <div className="flex-1">
@@ -204,34 +236,34 @@ export default function CoverLetterViewer() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h3 className="font-bold text-gray-900 text-sm tracking-wide">Color Theme</h3>
+          <div className={`rounded-xl shadow-sm border overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-900 border-slate-850' : 'bg-white border-gray-200'}`}>
+            <div className={`p-4 border-b transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-850 border-slate-800' : 'bg-gray-50 border-gray-100'}`}>
+              <h3 className={`font-bold text-sm tracking-wide ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Color Theme</h3>
             </div>
             <div className="p-4 grid grid-cols-4 gap-3">
-              {(Object.keys(THEME_COLORS) as ColorTheme[]).map((theme) => (
+              {(Object.keys(THEME_COLORS) as ColorTheme[]).map((themeVal) => (
                 <button
-                  key={theme}
-                  onClick={() => setColorTheme(theme)}
-                  className={`aspect-square rounded-full border-2 transition-all ${colorTheme === theme ? 'ring-2 ring-offset-2 ring-[#1A66FF] border-white' : 'border-transparent hover:scale-105'}`}
+                  key={themeVal}
+                  onClick={() => setColorTheme(themeVal)}
+                  className={`aspect-square rounded-full border-2 transition-all ${colorTheme === themeVal ? 'ring-2 ring-offset-2 ring-[#1A66FF] border-white' : 'border-transparent hover:scale-105'}`}
                   style={{
-                    backgroundColor: theme === 'classic' ? '#ffffff' : (theme === 'navy' ? '#0A192F' : (theme === 'emerald' ? '#064e3b' : '#4c0519')),
-                    boxShadow: theme === 'classic' ? 'inset 0 0 0 1px #e5e7eb' : 'none'
+                    backgroundColor: themeVal === 'classic' ? '#ffffff' : (themeVal === 'navy' ? '#0A192F' : (themeVal === 'emerald' ? '#064e3b' : '#4c0519')),
+                    boxShadow: themeVal === 'classic' ? 'inset 0 0 0 1px #e5e7eb' : 'none'
                   }}
-                  title={theme}
+                  title={themeVal}
                 />
               ))}
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div className="p-4 border-b border-gray-100 bg-gray-50">
-              <h3 className="font-bold text-gray-900 text-sm tracking-wide">Headshot Image</h3>
+          <div className={`rounded-xl shadow-sm border overflow-hidden transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-900 border-slate-850' : 'bg-white border-gray-200'}`}>
+            <div className={`p-4 border-b transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-850 border-slate-800' : 'bg-gray-50 border-gray-100'}`}>
+              <h3 className={`font-bold text-sm tracking-wide ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Headshot Image</h3>
             </div>
             <div className="p-4 flex flex-col items-center gap-3">
               {headshotUrl ? (
                 <div className="relative group">
-                  <img src={headshotUrl} alt="Headshot" className="w-24 h-24 rounded-full object-cover border border-gray-200 shadow-sm" />
+                  <img src={headshotUrl} alt="Headshot" className={`w-24 h-24 rounded-full object-cover border shadow-sm ${theme === 'dark' ? 'border-slate-750' : 'border-gray-200'}`} />
                   <button 
                     onClick={() => setHeadshotUrl(null)}
                     className="absolute inset-0 bg-black/50 text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
@@ -242,7 +274,7 @@ export default function CoverLetterViewer() {
               ) : (
                 <button 
                   onClick={() => fileInputRef.current?.click()}
-                  className="w-24 h-24 rounded-full border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-500 hover:text-[#1A66FF] hover:border-[#1A66FF] hover:bg-blue-50 transition-colors"
+                  className={`w-24 h-24 rounded-full border-2 border-dashed flex flex-col items-center justify-center transition-colors ${theme === 'dark' ? 'border-slate-700 text-slate-500 hover:text-blue-400 hover:border-blue-500 hover:bg-blue-950/20' : 'border-gray-300 text-gray-500 hover:text-[#1A66FF] hover:border-[#1A66FF] hover:bg-blue-50'}`}
                 >
                   <Camera className="w-6 h-6 mb-1" />
                   <span className="text-[10px] font-bold uppercase tracking-wider">Upload</span>
@@ -262,7 +294,7 @@ export default function CoverLetterViewer() {
 
         {/* Paper View - Fully Editable */}
         <div className="w-full lg:flex-1">
-          <div id="cover-letter-content" ref={pdfRef} className="bg-white rounded-xl overflow-hidden transition-colors duration-300 print:shadow-none print:border-none print:m-0 print:p-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border border-gray-200">
+          <div id="cover-letter-content" ref={pdfRef} className={`rounded-xl overflow-hidden transition-colors duration-300 print:shadow-none print:border-none print:m-0 print:p-0 shadow-[0_8px_30px_rgba(0,0,0,0.04)] border ${theme === 'dark' ? 'bg-slate-900 border-slate-800' : 'bg-white border-gray-200'}`}>
             
             {/* Header portion with colored background option */}
             <div className={`p-8 sm:p-14 border-b ${themeClasses.border} flex flex-col sm:flex-row gap-6 items-start sm:items-center justify-between ${themeClasses.bg} ${themeClasses.text}`}>
@@ -271,7 +303,7 @@ export default function CoverLetterViewer() {
                   value={content.applicantDetails}
                   onChange={(e) => handleTextareaChange('applicantDetails', e)}
                   spellCheck={false}
-                  className={`w-full bg-transparent resize-none outline-none font-sans leading-relaxed focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden ${colorTheme !== 'classic' ? 'text-white placeholder-white/50' : 'text-gray-900'}`}
+                  className={`w-full bg-transparent resize-none outline-none font-sans leading-relaxed focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden text-inherit ${colorTheme !== 'classic' ? 'placeholder-white/50' : 'placeholder-gray-400'}`}
                   rows={content.applicantDetails.split('\n').length}
                 />
               </div>
@@ -283,13 +315,13 @@ export default function CoverLetterViewer() {
             </div>
 
             {/* Main content area */}
-            <div className="p-8 sm:p-14 pt-8 font-serif leading-relaxed text-[15px] flex flex-col gap-6 text-gray-800 bg-white">
+            <div className={`p-8 sm:p-14 pt-8 font-serif leading-relaxed text-[15px] flex flex-col gap-6 transition-colors duration-300 ${theme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-800'}`}>
               
               <textarea 
                 value={content.recipientDetails}
                 onChange={(e) => handleTextareaChange('recipientDetails', e)}
                 spellCheck={false}
-                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden"
+                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden text-inherit"
                 rows={content.recipientDetails.split('\n').length}
               />
 
@@ -297,7 +329,7 @@ export default function CoverLetterViewer() {
                 value={content.greeting}
                 onChange={(e) => updateContent('greeting', e.target.value)}
                 spellCheck={false}
-                className="w-full bg-transparent outline-none focus:ring-1 focus:ring-blue-500/50 rounded font-bold"
+                className="w-full bg-transparent outline-none focus:ring-1 focus:ring-blue-500/50 rounded font-bold text-inherit"
               />
 
               <textarea 
@@ -305,7 +337,7 @@ export default function CoverLetterViewer() {
                 value={content.body}
                 onChange={(e) => handleTextareaChange('body', e)}
                 spellCheck={false}
-                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden leading-relaxed"
+                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden leading-relaxed text-inherit"
                 rows={Math.max(10, content.body.split('\n').length)}
               />
 
@@ -313,7 +345,7 @@ export default function CoverLetterViewer() {
                 value={content.signOff}
                 onChange={(e) => handleTextareaChange('signOff', e)}
                 spellCheck={false}
-                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden mt-4"
+                className="w-full bg-transparent resize-none outline-none focus:ring-1 focus:ring-blue-500/50 rounded overflow-hidden mt-4 text-inherit"
                 rows={content.signOff.split('\n').length}
               />
 
