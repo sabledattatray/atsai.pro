@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import { Briefcase, FileText, User, LayoutDashboard, Menu, X, ChevronDown, Sparkles, Github, Linkedin, Twitter, Globe, Terminal, Cpu, Database, Activity, ArrowRight } from 'lucide-react';
 import { Button } from './ui/button';
 import { Logo } from './Logo';
+import { auth, onAuthStateChanged, signOut } from '@/lib/firebase';
 import { categorizedCoverLetters, slugify } from '../data/coverLetters';
 
 const CoverLettersMenu = () => (
@@ -258,6 +259,30 @@ const ResumesMenu = () => (
 export default function Layout() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  React.useEffect(() => {
+    if (!auth) return;
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+    });
+    return () => unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    setIsDropdownOpen(false);
+    if (auth) {
+      try {
+        await signOut(auth);
+      } catch (err) {
+        console.error("Sign out error:", err);
+      }
+    }
+    navigate('/signin');
+  };
 
   const [consoleInput, setConsoleInput] = useState('');
   const [consoleOutput, setConsoleOutput] = useState<string[]>([
@@ -332,11 +357,47 @@ export default function Layout() {
                   <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> Career Pathways
                 </Link>
                 <div className="h-4 w-px bg-white/10" />
-                <button className="flex items-center gap-2 hover:opacity-85 cursor-pointer">
-                  <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white font-extrabold text-xs uppercase shadow-md shadow-indigo-500/25">
-                    ME
-                  </div>
-                </button>
+                <div className="relative">
+                  <button 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    className="flex items-center gap-2 hover:opacity-85 cursor-pointer focus:outline-none"
+                  >
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-tr from-indigo-500 to-violet-500 flex items-center justify-center text-white font-extrabold text-xs uppercase shadow-md shadow-indigo-500/25">
+                      {user ? (user.displayName ? user.displayName.split(' ').map((n: string) => n[0]).join('').substring(0, 2).toUpperCase() : user.email?.substring(0, 2).toUpperCase()) : 'ME'}
+                    </div>
+                  </button>
+
+                  {isDropdownOpen && (
+                    <>
+                      {/* Backdrop for click away */}
+                      <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
+                      
+                      {/* Dropdown Menu */}
+                      <div className="absolute right-0 mt-2 w-56 bg-[#070b14]/98 border border-white/10 rounded-xl shadow-2xl p-4 z-50 text-left normal-case tracking-normal backdrop-blur-xl">
+                        <div className="mb-3 border-b border-white/5 pb-2.5">
+                          <p className="text-xs font-bold text-white truncate">{user?.displayName || 'Guest User'}</p>
+                          <p className="text-[10px] text-slate-400 truncate mt-0.5">{user?.email || 'seeker@example.com'}</p>
+                        </div>
+                        
+                        <div className="space-y-1">
+                          <Link 
+                            to="/app?reset=true" 
+                            onClick={() => setIsDropdownOpen(false)}
+                            className="flex items-center gap-2 text-xs text-slate-300 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all font-semibold"
+                          >
+                            <LayoutDashboard className="w-3.5 h-3.5 text-indigo-400" /> Dashboard
+                          </Link>
+                          <button 
+                            onClick={handleLogout}
+                            className="w-full flex items-center gap-2 text-xs text-rose-400 hover:text-rose-300 px-2 py-1.5 rounded-lg hover:bg-rose-500/10 transition-all text-left cursor-pointer font-bold border-none bg-transparent"
+                          >
+                            <X className="w-3.5 h-3.5 text-rose-500" /> Sign Out
+                          </button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
               </>
             )}
           </nav>
