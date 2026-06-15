@@ -29,6 +29,27 @@ export default function TemplateEditorPage() {
   const [sidebarWidth, setSidebarWidth] = useState(400);
   const pdfRef = useRef<HTMLDivElement>(null);
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+  const [pageCount, setPageCount] = useState(1);
+
+  React.useEffect(() => {
+    const element = pdfRef.current;
+    if (!element) return;
+    
+    const inner = element.firstElementChild as HTMLElement;
+    if (!inner) return;
+    
+    const originalHeight = element.style.height;
+    element.style.height = 'auto';
+    const contentHeight = inner.offsetHeight;
+    element.style.height = originalHeight;
+    
+    const pxPageHeight = pageSize === 'a4' ? 1123 : 1056;
+    const count = Math.max(1, Math.ceil(contentHeight / pxPageHeight));
+    
+    if (count !== pageCount) {
+      setPageCount(count);
+    }
+  }, [resumeData, selectedTemplate, spacing, fontSize, fontFamily, pageSize, pageCount]);
 
   const startResizing = React.useCallback((mouseDownEvent: React.MouseEvent) => {
     mouseDownEvent.preventDefault();
@@ -587,15 +608,26 @@ export default function TemplateEditorPage() {
           <div 
              ref={pdfRef}
              id="pdf-content"
-             className={`relative ${resumeTheme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-900'} shadow-[0_10px_40px_rgba(0,0,0,0.15)] origin-top mx-auto print:shadow-none print:mx-0 transition-all duration-300 ${pageSize === 'a4' ? 'w-[210mm] min-h-[297mm]' : 'w-[8.5in] min-h-[11in]'} ${fontFamily} ${fontSize}`}
+             className={`relative ${resumeTheme === 'dark' ? 'bg-slate-950 text-slate-100' : 'bg-white text-gray-900'} shadow-[0_10px_40px_rgba(0,0,0,0.15)] origin-top mx-auto print:shadow-none print:mx-0 transition-all duration-300 ${pageSize === 'a4' ? 'w-[210mm]' : 'w-[8.5in]'} ${fontFamily} ${fontSize}`}
+             style={{ height: `${pageCount * (pageSize === 'a4' ? 1123 : 1056)}px` }}
           >
              {/* Visual Page Break Indicators */}
-             <div className="pdf-exclude absolute left-0 right-0 border-t border-dashed border-red-500/50 z-30 pointer-events-none" style={{ top: pageSize === 'a4' ? '1123px' : '1056px' }}>
-               <span className="absolute right-4 -top-2 bg-red-500/10 text-red-400 text-[9px] font-bold px-2 py-0.5 rounded border border-red-500/20 backdrop-blur-sm">Page 1 Break</span>
-             </div>
-             <div className="pdf-exclude absolute left-0 right-0 border-t border-dashed border-red-500/50 z-30 pointer-events-none" style={{ top: pageSize === 'a4' ? '2246px' : '2112px' }}>
-               <span className="absolute right-4 -top-2 bg-red-500/10 text-red-400 text-[9px] font-bold px-2 py-0.5 rounded border border-red-500/20 backdrop-blur-sm">Page 2 Break</span>
-             </div>
+             {Array.from({ length: pageCount - 1 }).map((_, index) => {
+               const pageNum = index + 1;
+               const pxPageHeight = pageSize === 'a4' ? 1123 : 1056;
+               const topPos = pageNum * pxPageHeight;
+               return (
+                 <div 
+                   key={pageNum}
+                   className="pdf-exclude absolute left-0 right-0 border-t border-dashed border-red-500/50 z-30 pointer-events-none" 
+                   style={{ top: `${topPos}px` }}
+                 >
+                   <span className="absolute right-4 -top-2 bg-red-500/10 text-red-400 text-[9px] font-bold px-2 py-0.5 rounded border border-red-500/20 backdrop-blur-sm">
+                     Page {pageNum} Break
+                   </span>
+                 </div>
+               );
+             })}
 
              {selectedTemplate === 'modern' ? (
                <ModernTemplate data={resumeData} color={themeColor} spacingClass={spacingClass} paddingClass={paddingClass} theme={resumeTheme} />
