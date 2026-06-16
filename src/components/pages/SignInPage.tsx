@@ -13,8 +13,8 @@ export default function SignInPage() {
   // SEO handled via Next.js metadata
 
   const router = useRouter();
-  const [email, setEmail] = useState('seeker@example.com');
-  const [password, setPassword] = useState('password123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
