@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -13,6 +13,7 @@ const TemplateEditorPage = lazy(() => import('./pages/TemplateEditorPage'));
 const SignInPage = lazy(() => import('./pages/SignInPage'));
 const SignUpPage = lazy(() => import('./pages/SignUpPage'));
 const CoverLetterViewer = lazy(() => import('./pages/CoverLetterViewer'));
+const CoverLettersPage = lazy(() => import('./pages/CoverLettersPage'));
 
 const CoverLetterBuilderPage = lazy(() => import('./pages/CoverLetterBuilderPage'));
 const LinkedInOptimizerPage = lazy(() => import('./pages/LinkedInOptimizerPage'));
@@ -42,7 +43,7 @@ export default function App() {
              <Route path="pricing" element={<PricingPage />} />
              <Route path="features" element={<FeaturesPage />} />
              <Route path="templates" element={<TemplatesPage />} />
-             <Route path="cover-letters" element={<Navigate to="/cover-letter-builder" replace />} />
+             <Route path="cover-letters" element={<CoverLettersPage />} />
              <Route path="cover-letters/:slug" element={<CoverLetterViewer />} />
              <Route path="app" element={<AnalysisDashboard />} />
              <Route path="seo/:slug" element={<SeoLandingPage />} />
