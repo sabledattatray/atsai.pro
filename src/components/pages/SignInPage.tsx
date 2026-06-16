@@ -292,7 +292,7 @@ export default function SignInPage() {
           </div>
 
           <div className="mt-8 text-center text-xs text-slate-500 font-medium">
-            Don't have an account? <Link href="/signup" className="text-indigo-400 font-bold hover:text-indigo-300">Create one for free</Link>
+            Don't have an account? <Link href="/sign-up" className="text-indigo-400 font-bold hover:text-indigo-300">Create one for free</Link>
           </div>
         </div>
       </div>
