@@ -45,6 +45,8 @@ export default function SignUpPage() {
           console.error("Failed to send verification email:", verErr);
         }
         console.log("Email Sign-Up success:", result.user);
+        const token = await result.user.getIdToken();
+        document.cookie = `__session=${token}; path=/; max-age=3600; Secure; SameSite=Strict`;
         router.push('/app');
       } catch (err: any) {
         console.error("Email Sign-Up failed:", err);

@@ -181,10 +181,11 @@ export default function AnalysisDashboard() {
 
   const handleCheckout = async (plan: 'basic' | 'pro') => {
     try {
+      const uid = user?.uid || '';
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ plan, mock: false })
+        body: JSON.stringify({ plan, uid })
       });
       const data = await response.json();
       
@@ -198,8 +199,8 @@ export default function AnalysisDashboard() {
             key: data.keyId,
             amount: data.amount,
             currency: data.currency,
-            name: "Resume Copilot",
-            description: plan === 'pro' ? "Unlimited Scans" : "10 Premium Scans",
+            name: "Resume Copilot AI",
+            description: plan === 'pro' ? 'Pro — Unlimited Scans' : 'Starter — 10 Premium Scans',
             order_id: data.orderId,
             handler: async function (response: any) {
                 try {
@@ -216,25 +217,32 @@ export default function AnalysisDashboard() {
                   if (verifyData.success) {
                     window.location.href = '/app?payment_success=true';
                   } else {
-                    alert('Payment verification failed.');
+                    alert('Payment verification failed. Please contact support.');
                   }
                 } catch (err) {
-                  alert('Payment verification error.');
+                  alert('Payment verification error. Please contact support.');
                 }
             },
             prefill: {
-                name: "Job Seeker",
-                email: "seeker@example.com",
+                name: user?.displayName || '',
+                email: user?.email || '',
+                contact: '',
             },
             theme: {
                 color: "#6366f1"
+            },
+            modal: {
+              ondismiss: () => {
+                console.log('Razorpay modal dismissed');
+              }
             }
         };
         const rzp1 = new window.Razorpay(options);
         rzp1.open();
       }
     } catch (err) {
-      console.error(err);
+      console.error('Checkout error:', err);
+      alert('Could not initiate payment. Please try again.');
     }
   };
 

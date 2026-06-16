@@ -27,6 +27,8 @@ export default function SignInPage() {
       try {
         const result = await signInWithEmailAndPassword(auth, email, password);
         console.log("Email Sign-In success:", result.user);
+        const token = await result.user.getIdToken();
+        document.cookie = `__session=${token}; path=/; max-age=3600; Secure; SameSite=Strict`;
         router.push('/app');
       } catch (err: any) {
         console.error("Email Sign-In failed:", err);
@@ -56,6 +58,8 @@ export default function SignInPage() {
     try {
       const result = await signInWithPopup(auth, googleProvider);
       console.log("Google Sign-In success:", result.user);
+      const token = await result.user.getIdToken();
+      document.cookie = `__session=${token}; path=/; max-age=3600; Secure; SameSite=Strict`;
       router.push('/app');
     } catch (error: any) {
       console.error("Google Sign-In failed:", error);
@@ -74,6 +78,8 @@ export default function SignInPage() {
     try {
       const result = await signInWithPopup(auth, githubProvider);
       console.log("GitHub Sign-In success:", result.user);
+      const token = await result.user.getIdToken();
+      document.cookie = `__session=${token}; path=/; max-age=3600; Secure; SameSite=Strict`;
       router.push('/app');
     } catch (error: any) {
       console.error("GitHub Sign-In failed:", error);
