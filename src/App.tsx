@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Layout from './components/Layout';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -59,9 +59,9 @@ export default function App() {
              <Route path="terms-of-service" element={<TermsOfServicePage />} />
           </Route>
           <Route path="/signin" element={<SignInPage />} />
-          <Route path="/sign-in" element={<Navigate to="/signin" replace />} />
+          <Route path="/sign-in" element={<SignInPage />} />
           <Route path="/signup" element={<SignUpPage />} />
-          <Route path="/sign-up" element={<Navigate to="/signup" replace />} />
+          <Route path="/sign-up" element={<SignUpPage />} />
           <Route path="/editor" element={<TemplateEditorPage />} />
         </Routes>
       </Suspense>
