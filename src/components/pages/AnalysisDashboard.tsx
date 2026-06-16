@@ -579,7 +579,7 @@ export default function AnalysisDashboard() {
                 onClick={async () => {
                   if (auth) {
                     await signOut(auth);
-                    router.push('/signin');
+                    router.push('/sign-in');
                   }
                 }}
                 className="text-rose-400 hover:text-rose-300 transition-colors cursor-pointer bg-transparent border-none p-0"
