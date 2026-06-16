@@ -1,12 +1,14 @@
 'use client';
 
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  GithubAuthProvider, 
-  signInWithPopup, 
-  signOut, 
+import {
+  getAuth,
+  GoogleAuthProvider,
+  GithubAuthProvider,
+  signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut,
   onAuthStateChanged,
   User
 } from 'firebase/auth';
@@ -31,17 +33,17 @@ if (process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
     authInstance = getAuth(app);
     googleProviderInstance = new GoogleAuthProvider();
     githubProviderInstance = new GithubAuthProvider();
-    
+
     // Add default scopes
     googleProviderInstance.addScope('profile');
     googleProviderInstance.addScope('email');
   } catch (error) {
-    console.error("Failed to initialize Firebase app:", error);
+    console.error('Failed to initialize Firebase app:', error);
   }
 }
 
 export const auth = authInstance;
 export const googleProvider = googleProviderInstance;
 export const githubProvider = githubProviderInstance;
-export { signInWithPopup, signOut, onAuthStateChanged };
+export { signInWithPopup, signInWithRedirect, getRedirectResult, signOut, onAuthStateChanged };
 export type { User };
