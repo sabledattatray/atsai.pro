@@ -19,7 +19,7 @@ export default function SeoLandingPage() {
     title: `${cleanTitle || 'ATS Resume Checker'} | Resume Copilot AI`,
     description: `Optimize your resume for ${cleanTitle || 'your next job'}. Run our semantic AI scan to detect missing skills and check ATS keyword compatibility.`,
     keywords: `ats resume checker, resume score, ${slug?.replace(/-/g, ', ') || 'resume optimizer'}, career intelligence, resume builder`,
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
   
   return (
@@ -115,7 +115,7 @@ export default function SeoLandingPage() {
       </main>
 
       <footer className="py-10 border-t border-white/5 text-center text-xs font-bold uppercase tracking-widest font-mono text-slate-500 px-6">
-         <p>© {new Date().getFullYear()} Resume Copilot. All rights reserved.</p>
+         <p>Â© {new Date().getFullYear()} Resume Copilot. All rights reserved.</p>
          <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2">
              <Link to="/seo/ats-resume-checker-india" className="hover:text-white transition-colors">ATS Checker India</Link>
              <Link to="/seo/ats-resume-checker-data-analyst" className="hover:text-white transition-colors">Data Analyst</Link>

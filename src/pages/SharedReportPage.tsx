@@ -14,7 +14,7 @@ export default function SharedReportPage() {
     title: report?.fileName ? `ATS Report: ${report.fileName} - Resume Copilot AI` : 'ATS Scan Report - Resume Copilot AI',
     description: 'View this verified ATS compatibility scan report. Discover semantic skills matching, experience alignment scores, and detailed priority diagnostics.',
     keywords: 'ats scan report, verified resume score, resume analysis matching, resume checker',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   useEffect(() => {
@@ -131,7 +131,7 @@ export default function SharedReportPage() {
                       Analyze Your Resume <ArrowRight className="w-5 h-5 ml-2" />
                   </Button>
                 </Link>
-                <p className="mt-6 text-[10px] text-slate-500 uppercase tracking-widest font-bold font-mono">Includes 3 free AI comparisons • No credit card required</p>
+                <p className="mt-6 text-[10px] text-slate-500 uppercase tracking-widest font-bold font-mono">Includes 3 free AI comparisons â€¢ No credit card required</p>
             </div>
          </div>
       </div>

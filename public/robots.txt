@@ -1,23 +1,11 @@
 User-agent: *
 Allow: /
-Allow: /pricing
-Allow: /features
-Allow: /templates
-Allow: /about
-Allow: /cover-letter-builder
-Allow: /linkedin-optimizer
-Allow: /career-hub
-Allow: /interview-guides
-Allow: /seo/
-Allow: /cover-letters/
 
-# Disallow routes behind login or session gates
+# Block private/app-only routes from indexing
 Disallow: /app
-Disallow: /app/
+Disallow: /app/analyze
 Disallow: /editor
-Disallow: /editor/
-Disallow: /signin
-Disallow: /signup
 Disallow: /share/
+Disallow: /cover-letters/
 
-Sitemap: https://cvwithcopilot.vercel.app/sitemap.xml
+Sitemap: https://www.atsai.pro/sitemap.xml

@@ -9,7 +9,7 @@ export default function LinkedInOptimizerPage() {
     title: 'LinkedIn Profile Optimizer - Resume Copilot AI',
     description: 'Optimize your LinkedIn profile to get headhunted by recruiters. Align your headline, about summary, and skills with recruiter search algorithms to rank #1 in Recruiter Lite searches.',
     keywords: 'linkedin profile optimization, linkedin headline generator, recruiter search optimization, linkedin keywords, headhunted by recruiters',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   return (

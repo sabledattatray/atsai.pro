@@ -11,7 +11,7 @@ export default function LandingPage() {
     title: 'Resume Copilot - AI Career Intelligence & ATS Resume Checker',
     description: 'Optimize your resume for any Applicant Tracking System (ATS). Resume Copilot uses AI to scan your resume against job descriptions, revealing skill gaps and helping you land more interviews.',
     keywords: 'ATS resume checker, AI resume optimizer, resume analysis, job matching, applicant tracking system, resume keywords, career intelligence, resume builder, AI career coach, Workday ATS, Greenhouse ATS, Lever ATS',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -117,9 +117,9 @@ export default function LandingPage() {
                            <p className="text-[8px] text-indigo-400 font-mono font-bold tracking-[0.25em] uppercase mb-2">Senior Full Stack Engineer</p>
                            <div className="flex justify-center gap-3 text-[7px] text-slate-500 font-medium font-mono">
                               <span>New York, NY</span>
-                              <span>•</span>
+                              <span>â€¢</span>
                               <span>alexander.wright@email.com</span>
-                              <span>•</span>
+                              <span>â€¢</span>
                               <span>github.com/awright</span>
                            </div>
                         </div>
@@ -136,7 +136,7 @@ export default function LandingPage() {
                                        <h3 className="text-[9px] font-bold text-slate-200">Stripe</h3>
                                        <span className="text-[7px] text-slate-500 font-mono font-semibold">2021 - Present</span>
                                     </div>
-                                    <p className="text-[8px] italic text-slate-400 mb-1.5">Senior Product Engineer — New York, NY</p>
+                                    <p className="text-[8px] italic text-slate-400 mb-1.5">Senior Product Engineer â€” New York, NY</p>
                                     <ul className="space-y-1.5 text-[7px] text-slate-400 leading-normal ml-2 list-none">
                                        <li className="relative">
                                           <span className="absolute -left-2 top-1 w-0.5 h-0.5 bg-slate-600 rounded-full"></span>
@@ -147,7 +147,7 @@ export default function LandingPage() {
                                           <span className="absolute -inset-x-1 -inset-y-0.5 bg-indigo-500/10 rounded border border-indigo-500/20 -z-10"></span>
                                           <span className="absolute -left-2 top-1 w-1.5 h-1.5 bg-indigo-500 rounded-full shadow-[0_0_8px_rgba(99,102,241,0.8)]"></span>
                                           <span className="font-semibold text-slate-200">Implemented <span className="font-bold text-indigo-400">CI/CD Pipelines</span> using GitHub Actions and <span className="font-bold text-indigo-400">Docker</span>, decreasing deployment times by 65%.</span>
-                                          <span className="inline-block bg-indigo-500/25 border border-indigo-400/30 text-indigo-300 px-1 py-0.2 rounded font-bold text-[5px] uppercase ml-1 relative -top-0.5 tracking-wider">Optimized ✨</span>
+                                          <span className="inline-block bg-indigo-500/25 border border-indigo-400/30 text-indigo-300 px-1 py-0.2 rounded font-bold text-[5px] uppercase ml-1 relative -top-0.5 tracking-wider">Optimized âœ¨</span>
                                        </li>
                                        <li className="relative">
                                           <span className="absolute -left-2 top-1 w-0.5 h-0.5 bg-slate-600 rounded-full"></span>
@@ -161,7 +161,7 @@ export default function LandingPage() {
                                        <h3 className="text-[9px] font-bold text-slate-200">Vercel</h3>
                                        <span className="text-[7px] text-slate-500 font-mono font-semibold">2018 - 2021</span>
                                     </div>
-                                    <p className="text-[8px] italic text-slate-400 mb-1.5">Frontend Software Engineer — San Francisco, CA</p>
+                                    <p className="text-[8px] italic text-slate-400 mb-1.5">Frontend Software Engineer â€” San Francisco, CA</p>
                                     <ul className="space-y-1.5 text-[7px] text-slate-400 leading-normal ml-2 list-none">
                                        <li className="relative">
                                           <span className="absolute -left-2 top-1 w-0.5 h-0.5 bg-slate-600 rounded-full"></span>
@@ -179,7 +179,7 @@ export default function LandingPage() {
                                        <h3 className="text-[9px] font-bold text-slate-200">Google</h3>
                                        <span className="text-[7px] text-slate-500 font-mono font-semibold">2017 - 2018</span>
                                     </div>
-                                    <p className="text-[8px] italic text-slate-400 mb-1.5">Software Engineering Intern — Mountain View, CA</p>
+                                    <p className="text-[8px] italic text-slate-400 mb-1.5">Software Engineering Intern â€” Mountain View, CA</p>
                                     <ul className="space-y-1.5 text-[7px] text-slate-400 leading-normal ml-2 list-none">
                                        <li className="relative">
                                           <span className="absolute -left-2 top-1 w-0.5 h-0.5 bg-slate-600 rounded-full"></span>
@@ -216,8 +216,8 @@ export default function LandingPage() {
                               <div>
                                  <h2 className="text-[9px] font-extrabold text-white uppercase tracking-widest border-b border-white/5 pb-1 mb-2">Certifications</h2>
                                  <div className="space-y-1 text-slate-400 text-[6px] leading-normal font-mono font-medium mb-3">
-                                    <div>• AWS Solutions Architect</div>
-                                    <div>• Google Cloud DevOps</div>
+                                    <div>â€¢ AWS Solutions Architect</div>
+                                    <div>â€¢ Google Cloud DevOps</div>
                                  </div>
                               </div>
 

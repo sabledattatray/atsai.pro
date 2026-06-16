@@ -12,7 +12,7 @@ export default function SignInPage() {
     title: 'Sign In - Resume Copilot AI',
     description: 'Sign in to your Resume Copilot AI workspace. Manage your credit balances, view scans, edit resumes, and prepare for interviews.',
     keywords: 'resume score sign in, sign in ats check, log in resume builder',
-    ogImage: 'https://cvwithcopilot.vercel.app/signin_page.png'
+    ogImage: 'https://www.atsai.pro/signin_page.png'
   });
 
   const navigate = useNavigate();
@@ -243,7 +243,7 @@ export default function SignInPage() {
               </div>
               <input 
                 type="password" 
-                placeholder="••••••••" 
+                placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}

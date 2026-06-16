@@ -6,7 +6,7 @@ export default function TermsOfServicePage() {
     title: 'Terms of Service - Resume Copilot AI',
     description: 'Read the terms of service of Resume Copilot AI. Learn about our service usage, AI accuracy limitations, user responsibility, and checkout/payment credits terms.',
     keywords: 'terms of service resume checker, use of AI recommendations, payment and credits policy',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   return (

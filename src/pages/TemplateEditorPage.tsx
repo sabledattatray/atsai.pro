@@ -579,11 +579,11 @@ export default function TemplateEditorPage() {
                     <div className="grid grid-cols-2 gap-2">
                        <button onClick={() => setPageSize('a4')} className={`border p-3 rounded-lg text-center transition-all ${pageSize === 'a4' ? 'border-indigo-600 bg-indigo-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
                           <div className="text-sm font-bold text-gray-900">A4</div>
-                          <div className="text-[10px] text-gray-500 mt-1">210 × 297 mm</div>
+                          <div className="text-[10px] text-gray-500 mt-1">210 Ã— 297 mm</div>
                        </button>
                        <button onClick={() => setPageSize('letter')} className={`border p-3 rounded-lg text-center transition-all ${pageSize === 'letter' ? 'border-indigo-600 bg-indigo-50 shadow-sm' : 'border-gray-200 hover:border-gray-300'}`}>
                           <div className="text-sm font-bold text-gray-900">US Letter</div>
-                          <div className="text-[10px] text-gray-500 mt-1">8.5 × 11 in</div>
+                          <div className="text-[10px] text-gray-500 mt-1">8.5 Ã— 11 in</div>
                        </button>
                     </div>
                  </div>
@@ -706,7 +706,7 @@ export function TechTemplate({ data, color, spacingClass, paddingClass, theme = 
         <p className={`text-lg font-medium mb-3 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>{data.title}</p>
         <div className={`flex justify-center gap-4 ${isDark ? 'text-slate-400' : 'text-gray-500'} font-medium text-[0.85em]`}>
            <span>{data.email}</span>
-           <span>•</span>
+           <span>â€¢</span>
            <span>{data.phone}</span>
         </div>
       </div>
@@ -815,7 +815,7 @@ export function ExecutiveTemplate({ data, color, spacingClass, paddingClass, the
 
       <div className="text-center">
         <h2 className={`text-[0.8em] font-black uppercase tracking-[0.2em] mb-3 ${isDark ? 'text-slate-400' : 'text-slate-500'}`}>Core Competencies</h2>
-        <p className={`text-[0.95em] ${isDark ? 'text-slate-200' : 'text-slate-800'} font-medium leading-relaxed max-w-2xl mx-auto`}>{data.skills.split(',').join(' • ')}</p>
+        <p className={`text-[0.95em] ${isDark ? 'text-slate-200' : 'text-slate-800'} font-medium leading-relaxed max-w-2xl mx-auto`}>{data.skills.split(',').join(' â€¢ ')}</p>
       </div>
     </div>
   );
@@ -1147,7 +1147,7 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass, them
         <p className={`text-lg italic ${isDark ? 'text-stone-400' : 'text-stone-700'} mb-4`}>{data.title}</p>
         <div className="flex justify-center gap-6 text-[0.85em] font-bold">
            <span>{data.email}</span>
-           <span>•</span>
+           <span>â€¢</span>
            <span>{data.phone}</span>
         </div>
       </div>
@@ -1169,9 +1169,9 @@ export function AcademicTemplate({ data, color, spacingClass, paddingClass, them
               <div className={`text-[0.95em] leading-relaxed ${isDark ? 'text-stone-300' : 'text-stone-800'} whitespace-pre-wrap ml-4`}>
                  <ul className="list-disc">
                    {exp.description.split('\n').map((line: string, idx: number) => (
-                      <li key={idx} className="mb-1 pl-1">{line.replace(/^•\s*/, '')}</li>
+                      <li key={idx} className="mb-1 pl-1">{line.replace(/^â€¢\s*/, '')}</li>
                    ))}
-                   {!exp.description.includes('\n') && <li className="mb-1 pl-1">{exp.description.replace(/^•\s*/, '')}</li>}
+                   {!exp.description.includes('\n') && <li className="mb-1 pl-1">{exp.description.replace(/^â€¢\s*/, '')}</li>}
                  </ul>
               </div>
             </div>

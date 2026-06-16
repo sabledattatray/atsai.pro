@@ -2,8 +2,8 @@
 > **Stop guessing what the ATS wants. Let the AI build it.**
 
 <p align="center">
-  <a href="https://cvwithcopilot.vercel.app" target="_blank">
-    <img src="https://img.shields.io/badge/Live%20Demo-cvwithcopilot.vercel.app-000000?style=for-the-badge&logo=vercel" alt="Live Demo" />
+  <a href="https://www.atsai.pro" target="_blank">
+    <img src="https://img.shields.io/badge/Live%20Demo-www.atsai.pro-000000?style=for-the-badge&logo=vercel" alt="Live Demo" />
   </a>
   <a href="https://github.com/sabledattatray/Resume-Copilot-AI/stargazers">
     <img src="https://img.shields.io/github/stars/sabledattatray/Resume-Copilot-AI?style=for-the-badge&logo=github&color=gold" alt="GitHub Stars" />

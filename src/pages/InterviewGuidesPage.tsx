@@ -18,7 +18,7 @@ export default function InterviewGuidesPage() {
     title: 'AI Interview Prep & Technical Guides | Resume Copilot AI',
     description: 'Prepare for tech interviews with discipline-specific prep guides. Practice software engineering, product management, and data science screening questions.',
     keywords: 'interview prep, tech interview guides, software engineering questions, product manager behavioral screen',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   return (

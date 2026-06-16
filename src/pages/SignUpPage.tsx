@@ -12,7 +12,7 @@ export default function SignUpPage() {
     title: 'Sign Up & Get Started - Resume Copilot AI',
     description: 'Create your free account on Resume Copilot AI. Get 3 free scans immediately to test your ATS resume score, audit skill gaps, and optimize formatting.',
     keywords: 'register resume builder, free resume account, join resume checker',
-    ogImage: 'https://cvwithcopilot.vercel.app/signin_page.png'
+    ogImage: 'https://www.atsai.pro/signin_page.png'
   });
 
   const navigate = useNavigate();
@@ -246,7 +246,7 @@ export default function SignUpPage() {
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 font-mono">Password</label>
                 <input 
                   type="password" 
-                  placeholder="••••••••" 
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -257,7 +257,7 @@ export default function SignUpPage() {
                 <label className="block text-[10px] font-bold uppercase tracking-widest text-slate-500 mb-2 font-mono">Confirm</label>
                 <input 
                   type="password" 
-                  placeholder="••••••••" 
+                  placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
                   required
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}

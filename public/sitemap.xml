@@ -1,141 +1,194 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <!-- Core Static Pages -->
+
+  <!-- ===== Core Pages ===== -->
   <url>
-    <loc>https://cvwithcopilot.vercel.app/</loc>
+    <loc>https://www.atsai.pro/</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
-    <changefreq>daily</changefreq>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/pricing</loc>
+    <loc>https://www.atsai.pro/pricing</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.atsai.pro/features</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.atsai.pro/templates</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/features</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/templates</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/about</loc>
+    <loc>https://www.atsai.pro/about</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.7</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/cover-letter-builder</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/linkedin-optimizer</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/career-hub</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/interview-guides</loc>
-    <priority>0.8</priority>
-    <changefreq>weekly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/privacy-policy</loc>
-    <priority>0.3</priority>
-    <changefreq>monthly</changefreq>
-  </url>
-  <url>
-    <loc>https://cvwithcopilot.vercel.app/terms-of-service</loc>
-    <priority>0.3</priority>
-    <changefreq>monthly</changefreq>
   </url>
 
-  <!-- Programmatic SEO Pages -->
+  <!-- ===== App / Tool Pages ===== -->
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/resume-score-data-analyst-mumbai</loc>
-    <priority>0.6</priority>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.atsai.pro/app</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/resume-checker-python-developer-india</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/cover-letter-builder</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/resume-ats-score-fresher-resume</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/linkedin-optimizer</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/senior-product-manager-ats-optimize</loc>
-    <priority>0.6</priority>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.atsai.pro/career-hub</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/react-frontend-engineer-silicon-valley</loc>
-    <priority>0.6</priority>
-    <changefreq>monthly</changefreq>
+    <loc>https://www.atsai.pro/interview-guides</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- ===== Auth Pages ===== -->
+  <url>
+    <loc>https://www.atsai.pro/signin</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/investment-banking-analyst-resume</loc>
+    <loc>https://www.atsai.pro/signup</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>yearly</changefreq>
     <priority>0.6</priority>
-    <changefreq>monthly</changefreq>
+  </url>
+
+  <!-- ===== Legal Pages ===== -->
+  <url>
+    <loc>https://www.atsai.pro/privacy-policy</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/nursing-registered-rn-ats-score</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/terms-of-service</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+
+  <!-- ===== SEO Programmatic Landing Pages ===== -->
+  <url>
+    <loc>https://www.atsai.pro/seo/ats-resume-checker-india</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/cybersecurity-analyst-remote-jobs</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/ats-resume-checker-data-analyst</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/salesforce-administrator-resume-check</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/resume-score-python-developer</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/digital-marketing-seo-manager</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/ats-resume-checker-mumbai-jobs</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/operations-manager-logistics-resume</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/beginner-resume-example</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/ats-resume-checker-india</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/resume-score-data-analyst-mumbai</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/ats-resume-checker-data-analyst</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/resume-checker-python-developer-india</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/resume-score-python-developer</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/resume-ats-score-fresher-resume</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/ats-resume-checker-mumbai-jobs</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/senior-product-manager-ats-optimize</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://cvwithcopilot.vercel.app/seo/beginner-resume-example</loc>
-    <priority>0.6</priority>
+    <loc>https://www.atsai.pro/seo/react-frontend-engineer-silicon-valley</loc>
+    <lastmod>2026-06-16</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://www.atsai.pro/seo/investment-banking-analyst-resume</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.atsai.pro/seo/nursing-registered-rn-ats-score</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.atsai.pro/seo/cybersecurity-analyst-remote-jobs</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.atsai.pro/seo/salesforce-administrator-resume-check</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.atsai.pro/seo/digital-marketing-seo-manager</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://www.atsai.pro/seo/operations-manager-logistics-resume</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
 </urlset>

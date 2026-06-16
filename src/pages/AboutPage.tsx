@@ -6,7 +6,7 @@ export default function AboutPage() {
     title: 'About Us - Resume Copilot AI',
     description: 'Learn about our mission to level the playing field for job seekers by reverse-engineering enterprise ATS filters and leveraging semantic AI analysis.',
     keywords: 'about resume copilot, ats resume engine mission, developer resume optimization tech',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
   return (
     <div className="flex flex-col w-full min-h-[calc(100vh-80px)] bg-[#030712] text-slate-100 py-24 px-6 relative overflow-hidden">

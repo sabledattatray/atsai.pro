@@ -10,7 +10,7 @@ export default function PricingPage() {
     title: 'Pricing Plans - Resume Copilot AI',
     description: 'Affordable plans for job seekers. Start scanning your resume for free, or buy credits to unlock advanced semantic matching, ATS keyword rewrites, and detailed skill gap analysis.',
     keywords: 'resume score pricing, resume checker cost, ats scanner credits, free resume scan, resume builder pricing',
-    ogImage: 'https://cvwithcopilot.vercel.app/pricing_page.png'
+    ogImage: 'https://www.atsai.pro/pricing_page.png'
   });
 
   return (

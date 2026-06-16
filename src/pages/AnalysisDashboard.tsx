@@ -585,7 +585,7 @@ export default function AnalysisDashboard() {
                    <Zap className="w-3.5 h-3.5 text-indigo-400" /> <span className="font-extrabold text-xs">{credits > 50 ? 'Admin Unlimited' : 'Upgrade Pro'}</span>
                </div>
                <div className="hidden sm:flex items-center gap-2 bg-slate-900/60 hover:bg-slate-800/80 px-3.5 py-1.5 rounded-full border border-white/5 text-xs text-slate-400 font-semibold cursor-pointer hover:border-white/10 transition-colors font-mono" onClick={() => setShowCmd(true)}>
-                   <Search className="w-3.5 h-3.5 text-slate-500" /> <kbd className="font-mono text-[9px] bg-slate-950 px-1.5 py-0.5 rounded border border-white/10 ml-1">⌘K</kbd>
+                   <Search className="w-3.5 h-3.5 text-slate-500" /> <kbd className="font-mono text-[9px] bg-slate-950 px-1.5 py-0.5 rounded border border-white/10 ml-1">âŒ˜K</kbd>
                </div>
            </div>
         </div>
@@ -704,7 +704,7 @@ export default function AnalysisDashboard() {
                             onClick={() => setActiveTab('settings')}
                             className="text-[9px] font-bold uppercase tracking-widest text-indigo-400 hover:text-indigo-300 transition-colors font-mono cursor-pointer bg-transparent border-none p-0"
                           >
-                            Manage Account →
+                            Manage Account â†’
                           </button>
                           {!isOAuthUser && (
                             <button
@@ -781,7 +781,7 @@ export default function AnalysisDashboard() {
                         <div className="space-y-4 font-mono text-[10px]">
                             {timeline.map((event, i) => (
                                 <div key={i} className={`flex items-start gap-4 transition-all duration-300 ${event.status === 'pending' ? 'opacity-30' : 'opacity-100'}`}>
-                                    <div className="w-16 shrink-0 text-slate-500 pt-0.5">{event.time || '—:—:—'}</div>
+                                    <div className="w-16 shrink-0 text-slate-500 pt-0.5">{event.time || 'â€”:â€”:â€”'}</div>
                                     <div className="flex-1 flex gap-3 items-center">
                                         <div className="mt-0.5">
                                             {event.status === 'done' ? (
@@ -932,7 +932,7 @@ export default function AnalysisDashboard() {
                             required 
                             value={newPassword}
                             onChange={(e) => setNewPassword(e.target.value)}
-                            placeholder="••••••••" 
+                            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
                             className="w-full h-11 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-xs font-semibold" 
                           />
                         </div>
@@ -943,7 +943,7 @@ export default function AnalysisDashboard() {
                             required 
                             value={confirmPassword}
                             onChange={(e) => setConfirmPassword(e.target.value)}
-                            placeholder="••••••••" 
+                            placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢" 
                             className="w-full h-11 px-4 rounded-xl border border-white/10 bg-slate-950/70 text-white placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30 transition-all text-xs font-semibold" 
                           />
                         </div>
@@ -1018,7 +1018,7 @@ export default function AnalysisDashboard() {
                   <div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-1.5 font-mono">
                       <span className="text-slate-400 font-sans">Monthly Scans</span>
-                      <span className="text-slate-300">{credits > 50 ? '12 / ∞' : `${10 - credits} / 10`}</span>
+                      <span className="text-slate-300">{credits > 50 ? '12 / âˆž' : `${10 - credits} / 10`}</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
                       <div className="h-full bg-indigo-500 rounded-full" style={{ width: credits > 50 ? '25%' : `${(10 - credits) * 10}%` }}></div>
@@ -1028,7 +1028,7 @@ export default function AnalysisDashboard() {
                   <div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-1.5 font-mono">
                       <span className="text-slate-400 font-sans">PDF Downloads</span>
-                      <span className="text-slate-300">4 / ∞</span>
+                      <span className="text-slate-300">4 / âˆž</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
                       <div className="h-full bg-indigo-500 rounded-full" style={{ width: '40%' }}></div>
@@ -1038,7 +1038,7 @@ export default function AnalysisDashboard() {
                   <div>
                     <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest mb-1.5 font-mono">
                       <span className="text-slate-400 font-sans">Cover Letter Edits</span>
-                      <span className="text-slate-300">2 / ∞</span>
+                      <span className="text-slate-300">2 / âˆž</span>
                     </div>
                     <div className="h-1.5 w-full bg-slate-950 rounded-full overflow-hidden border border-white/5">
                       <div className="h-full bg-indigo-500 rounded-full" style={{ width: '20%' }}></div>
@@ -1221,7 +1221,7 @@ export default function AnalysisDashboard() {
                     <div className="px-2 py-1.5 text-[8px] font-extrabold uppercase tracking-widest text-slate-500 font-mono">Actions</div>
                     <div className="flex justify-between items-center px-3 py-2 text-xs text-slate-200 hover:bg-white/5 rounded-xl cursor-pointer transition-colors" onClick={() => { setShowCmd(false); setStatus('IDLE'); }}>
                         <span className="flex items-center gap-2.5 font-semibold"><UploadCloud className="w-4 h-4 text-indigo-400"/> New Analysis</span>
-                        <kbd className="font-mono text-[9px] text-slate-500">⌘N</kbd>
+                        <kbd className="font-mono text-[9px] text-slate-500">âŒ˜N</kbd>
                     </div>
                     <div className="flex justify-between items-center px-3 py-2 text-xs text-slate-200 hover:bg-white/5 rounded-xl cursor-pointer transition-colors">
                         <span className="flex items-center gap-2.5 font-semibold"><Download className="w-4 h-4 text-indigo-400"/> Download Report</span>
@@ -1574,7 +1574,7 @@ function SectionScore({ label, score }: { label: string, score: number }) {
   return (
     <div className="flex justify-between items-center text-xs border-b border-white/5 py-2 last:border-0 border-dashed font-mono">
       <span className="text-slate-400 font-semibold font-sans">{label}</span>
-      <span className={`${getScoreColor(score)}`}>{score != null ? `${score}%` : '—'}</span>
+      <span className={`${getScoreColor(score)}`}>{score != null ? `${score}%` : 'â€”'}</span>
     </div>
   );
 }

@@ -68,7 +68,7 @@ const ARTICLES: Article[] = [
         "No Graphics or Icon Bars: Progress bars for skills (e.g., 'React: 80%') are unreadable to algorithms."
       ]},
       { type: 'heading', text: "Semantic Keyword Matching" },
-      { type: 'paragraph', text: "Align your skills section with the specific vocabulary used in the job post. If the listing asks for 'ReactJS', don't write 'React' — match the exact spelling. Integrate these keywords naturally inside your work experience bullet points rather than just listing them in a wall of text." }
+      { type: 'paragraph', text: "Align your skills section with the specific vocabulary used in the job post. If the listing asks for 'ReactJS', don't write 'React' â€” match the exact spelling. Integrate these keywords naturally inside your work experience bullet points rather than just listing them in a wall of text." }
     ]
   },
   {
@@ -134,7 +134,7 @@ const ARTICLES: Article[] = [
     readTime: "3 min read",
     desc: "What to write instead in your critical top 20% of the page to hook a recruiter's attention in exactly 6.4 seconds.",
     content: [
-      { type: 'paragraph', text: "Starting your resume with 'Objective: Seeking a challenging role to utilize my skills and grow with a forward-thinking company' is a waste of prime real estate. Recruiters already know your objective — it's to get the job. Instead, use a Professional Summary." },
+      { type: 'paragraph', text: "Starting your resume with 'Objective: Seeking a challenging role to utilize my skills and grow with a forward-thinking company' is a waste of prime real estate. Recruiters already know your objective â€” it's to get the job. Instead, use a Professional Summary." },
       { type: 'heading', text: "The Professional Summary" },
       { type: 'paragraph', text: "A Professional Summary is a 3-4 sentence elevator pitch positioned at the very top of your resume. It should outline who you are, your core expertise, and a major metric-based highlight." },
       { type: 'heading', text: "The Summary Blueprint" },
@@ -176,7 +176,7 @@ export default function CareerHubPage() {
     title: 'Career Hub & AI Resume Optimization Blog | Resume Copilot AI',
     description: 'Discover data-backed career strategies, insider ATS knowledge, and tactical advice on resume writing, technical parsing, and interview prep.',
     keywords: 'career hub, resume writing advice, ats guide 2026, google xyz formula, soft skills keyword search',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   return (

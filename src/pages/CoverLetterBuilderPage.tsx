@@ -9,7 +9,7 @@ export default function CoverLetterBuilderPage() {
     title: 'AI Cover Letter Builder - Resume Copilot AI',
     description: 'Create highly-tailored, professional cover letters mapped to specific job descriptions using Gemini 1.5 Pro AI. Bypasses corporate jargon and highlights matching value.',
     keywords: 'ai cover letter generator, resume cover letter builder, personalized cover letter generator, professional cover letter tool, gemini cover letter',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   return (

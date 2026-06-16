@@ -12,7 +12,7 @@ export default function TemplatesPage() {
     title: 'ATS-Friendly Resume Templates - Resume Copilot AI',
     description: 'Get hired faster with recruiter-vetted, ATS-tested resume templates. 100% machine-readable formats optimized for Workday, Taleo, and Greenhouse parsers.',
     keywords: 'ats resume templates, recruiter vetted resume, resume layout templates, download free resume format, resume templates list',
-    ogImage: 'https://cvwithcopilot.vercel.app/pricing_page.png'
+    ogImage: 'https://www.atsai.pro/pricing_page.png'
   });
 
   const [activeCategory, setActiveCategory] = React.useState('All');

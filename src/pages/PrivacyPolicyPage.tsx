@@ -6,7 +6,7 @@ export default function PrivacyPolicyPage() {
     title: 'Privacy Policy - Resume Copilot AI',
     description: 'Review our privacy policy to understand how we securely parse your resume, process data using AI APIs, and maintain strict data retention standards.',
     keywords: 'privacy policy resume checker, data protection resume scanner, secure resume processing',
-    ogImage: 'https://cvwithcopilot.vercel.app/landing_page.png'
+    ogImage: 'https://www.atsai.pro/landing_page.png'
   });
 
   return (
