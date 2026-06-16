@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -42,6 +42,7 @@ export default function App() {
              <Route path="pricing" element={<PricingPage />} />
              <Route path="features" element={<FeaturesPage />} />
              <Route path="templates" element={<TemplatesPage />} />
+             <Route path="cover-letters" element={<Navigate to="/cover-letter-builder" replace />} />
              <Route path="cover-letters/:slug" element={<CoverLetterViewer />} />
              <Route path="app" element={<AnalysisDashboard />} />
              <Route path="seo/:slug" element={<SeoLandingPage />} />
