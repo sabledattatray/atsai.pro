@@ -97,17 +97,17 @@ export default function SeoLandingPage() {
             <div className="max-w-6xl mx-auto">
                 <h2 className="text-2xl font-bold text-center text-white tracking-tight mb-10 border-b border-white/5 pb-10">Explore Our 1,000+ Dynamic Career Pathways</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-x-8 gap-y-4 text-sm font-semibold text-indigo-400">
-                    <Link to="/seo/resume-score-data-analyst-mumbai" className="hover:underline hover:text-indigo-300">Data Analyst in Mumbai</Link>
-                    <Link to="/seo/resume-checker-python-developer-india" className="hover:underline hover:text-indigo-300">Python Dev India</Link>
-                    <Link to="/seo/resume-ats-score-fresher-resume" className="hover:underline hover:text-indigo-300">Fresher Entry Level</Link>
-                    <Link to="/seo/senior-product-manager-ats-optimize" className="hover:underline hover:text-indigo-300">Senior Prod Mgr</Link>
-                    <Link to="/seo/react-frontend-engineer-silicon-valley" className="hover:underline hover:text-indigo-300">React UI Engineer</Link>
-                    <Link to="/seo/investment-banking-analyst-resume" className="hover:underline hover:text-indigo-300">Investment Banking</Link>
-                    <Link to="/seo/nursing-registered-rn-ats-score" className="hover:underline hover:text-indigo-300">Registered Nurse (RN)</Link>
-                    <Link to="/seo/cybersecurity-analyst-remote-jobs" className="hover:underline hover:text-indigo-300">Cybersecurity Remote</Link>
-                    <Link to="/seo/salesforce-administrator-resume-check" className="hover:underline hover:text-indigo-300">Salesforce Admin</Link>
-                    <Link to="/seo/digital-marketing-seo-manager" className="hover:underline hover:text-indigo-300">SEO Marketing Manager</Link>
-                    <Link to="/seo/operations-manager-logistics-resume" className="hover:underline hover:text-indigo-300">Logistics Ops Manager</Link>
+                    <Link to="/resume-score-data-analyst-mumbai" className="hover:underline hover:text-indigo-300">Data Analyst in Mumbai</Link>
+                    <Link to="/resume-checker-python-developer-india" className="hover:underline hover:text-indigo-300">Python Dev India</Link>
+                    <Link to="/resume-ats-score-fresher-resume" className="hover:underline hover:text-indigo-300">Fresher Entry Level</Link>
+                    <Link to="/senior-product-manager-ats-optimize" className="hover:underline hover:text-indigo-300">Senior Prod Mgr</Link>
+                    <Link to="/react-frontend-engineer-silicon-valley" className="hover:underline hover:text-indigo-300">React UI Engineer</Link>
+                    <Link to="/investment-banking-analyst-resume" className="hover:underline hover:text-indigo-300">Investment Banking</Link>
+                    <Link to="/nursing-registered-rn-ats-score" className="hover:underline hover:text-indigo-300">Registered Nurse (RN)</Link>
+                    <Link to="/cybersecurity-analyst-remote-jobs" className="hover:underline hover:text-indigo-300">Cybersecurity Remote</Link>
+                    <Link to="/salesforce-administrator-resume-check" className="hover:underline hover:text-indigo-300">Salesforce Admin</Link>
+                    <Link to="/digital-marketing-seo-manager" className="hover:underline hover:text-indigo-300">SEO Marketing Manager</Link>
+                    <Link to="/operations-manager-logistics-resume" className="hover:underline hover:text-indigo-300">Logistics Ops Manager</Link>
                     <div className="text-slate-500 flex items-center justify-center bg-white/5 rounded-xl text-xs italic font-medium px-4 py-2 border border-white/5">+ 4,989 more programmatic routes</div>
                 </div>
             </div>
@@ -117,11 +117,11 @@ export default function SeoLandingPage() {
       <footer className="py-10 border-t border-white/5 text-center text-xs font-bold uppercase tracking-widest font-mono text-slate-500 px-6">
          <p>Â© {new Date().getFullYear()} Resume Copilot. All rights reserved.</p>
          <div className="mt-4 flex flex-wrap justify-center gap-x-6 gap-y-2">
-             <Link to="/seo/ats-resume-checker-india" className="hover:text-white transition-colors">ATS Checker India</Link>
-             <Link to="/seo/ats-resume-checker-data-analyst" className="hover:text-white transition-colors">Data Analyst</Link>
-             <Link to="/seo/resume-score-python-developer" className="hover:text-white transition-colors">Python Developer</Link>
-             <Link to="/seo/ats-resume-checker-mumbai-jobs" className="hover:text-white transition-colors">Mumbai Jobs</Link>
-             <Link to="/seo/beginner-resume-example" className="hover:text-white transition-colors">Beginner Example</Link>
+             <Link to="/ats-resume-checker-india" className="hover:text-white transition-colors">ATS Checker India</Link>
+             <Link to="/ats-resume-checker-data-analyst" className="hover:text-white transition-colors">Data Analyst</Link>
+             <Link to="/resume-score-python-developer" className="hover:text-white transition-colors">Python Developer</Link>
+             <Link to="/ats-resume-checker-mumbai-jobs" className="hover:text-white transition-colors">Mumbai Jobs</Link>
+             <Link to="/beginner-resume-example" className="hover:text-white transition-colors">Beginner Example</Link>
          </div>
          {/* Hidden FAQ Schema for Programmatic SEO */}
          <script type="application/ld+json">

@@ -1,5 +1,5 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useParams } from 'react-router-dom';
 import Layout from './components/Layout';
 
 const LandingPage = lazy(() => import('./pages/LandingPage'));
@@ -32,6 +32,11 @@ const PageLoader = () => (
     <p className="mt-4 text-xs font-semibold tracking-wider text-slate-400 uppercase animate-pulse">Loading Workspace</p>
   </div>
 );
+// Redirects legacy /seo/:slug → clean /:slug
+function SeoRedirect() {
+  const { slug } = useParams<{ slug: string }>();
+  return <Navigate to={`/${slug}`} replace />;
+}
 
 export default function App() {
   return (
@@ -46,10 +51,10 @@ export default function App() {
              <Route path="cover-letters" element={<CoverLettersPage />} />
              <Route path="cover-letters/:slug" element={<CoverLetterViewer />} />
              <Route path="app" element={<AnalysisDashboard />} />
-             <Route path="seo/:slug" element={<SeoLandingPage />} />
+             <Route path="seo/:slug" element={<SeoRedirect />} />
              <Route path="app/analyze" element={<AnalysisDashboard />} />
              <Route path="share/:id" element={<SharedReportPage />} />
-             
+
              <Route path="cover-letter-builder" element={<CoverLetterBuilderPage />} />
              <Route path="linkedin-optimizer" element={<LinkedInOptimizerPage />} />
              <Route path="career-hub" element={<CareerHubPage />} />
@@ -57,6 +62,8 @@ export default function App() {
              <Route path="about" element={<AboutPage />} />
              <Route path="privacy-policy" element={<PrivacyPolicyPage />} />
              <Route path="terms-of-service" element={<TermsOfServicePage />} />
+             {/* Clean SEO URLs — must be last so specific routes take priority */}
+             <Route path=":slug" element={<SeoLandingPage />} />
           </Route>
           <Route path="/signin" element={<SignInPage />} />
           <Route path="/sign-in" element={<SignInPage />} />
