@@ -1,12 +1,23 @@
 import { NextRequest, NextResponse } from 'next/server';
 import crypto from 'crypto';
+import { getSQL } from '@/lib/db';
+
+// Credits granted per plan
+const PLAN_CREDITS: Record<string, number> = {
+  starter: 10,
+  pro: 50,
+  enterprise: 200,
+};
+const DEFAULT_CREDITS = 10;
 
 export async function POST(req: NextRequest) {
   try {
+    const sql = getSQL();
     const rawBody = await req.text();
     const secret = process.env.RAZORPAY_WEBHOOK_SECRET || '';
     const signature = req.headers.get('x-razorpay-signature');
 
+    // Verify webhook signature if secret is configured
     if (secret && signature) {
       const shasum = crypto.createHmac('sha256', secret);
       shasum.update(rawBody);
@@ -21,24 +32,60 @@ export async function POST(req: NextRequest) {
     const event = body.event;
 
     switch (event) {
-      case 'payment.captured':
-        console.log('Payment succeeded - executing robust credit provisioning');
+      case 'payment.captured': {
+        const payment = body.payload?.payment?.entity;
+        const uid: string | undefined = payment?.notes?.uid;
+        const plan: string | undefined = payment?.notes?.plan;
+
+        if (uid) {
+          const credits = PLAN_CREDITS[plan || ''] ?? DEFAULT_CREDITS;
+          await sql`
+            UPDATE users
+            SET credits = credits + ${credits}
+            WHERE uid = ${uid}
+          `;
+          console.log(`✅ Payment captured: +${credits} credits for uid=${uid} (plan=${plan})`);
+        } else {
+          console.warn('payment.captured event missing uid in notes — skipping credit grant');
+        }
         break;
+      }
+
       case 'payment.failed':
-        console.log('Payment failed - firing retry notification & blocking access');
+        console.log('❌ Payment failed:', body.payload?.payment?.entity?.id);
         break;
-      case 'subscription.cancelled':
-        console.log('Subscription canceled - scheduling downgrade and credit adjustment');
+
+      case 'subscription.cancelled': {
+        const uid = body.payload?.subscription?.entity?.notes?.uid;
+        if (uid) {
+          await sql`UPDATE users SET credits = 3 WHERE uid = ${uid}`;
+          console.log(`🔄 Subscription cancelled — credits reset for uid=${uid}`);
+        }
         break;
-      case 'refund.created':
-        console.log('Charge refunded - executing credit rollback safety protocol');
+      }
+
+      case 'refund.created': {
+        const uid = body.payload?.refund?.entity?.notes?.uid;
+        const plan = body.payload?.refund?.entity?.notes?.plan;
+        if (uid) {
+          const credits = PLAN_CREDITS[plan || ''] ?? DEFAULT_CREDITS;
+          await sql`
+            UPDATE users
+            SET credits = GREATEST(0, credits - ${credits})
+            WHERE uid = ${uid}
+          `;
+          console.log(`💸 Refund: -${credits} credits for uid=${uid}`);
+        }
         break;
+      }
+
       default:
-        console.log(`Unhandled event type ${event}`);
+        console.log(`Unhandled Razorpay event: ${event}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (error: any) {
+    console.error('Razorpay webhook error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }

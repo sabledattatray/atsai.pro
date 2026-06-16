@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'UID and credits are required.' }, { status: 400 });
     }
 
-    const updated = updateCredits(uid, parseInt(credits, 10));
+    const updated = await updateCredits(uid, parseInt(credits, 10));
     if (updated) {
       return NextResponse.json({ success: true, message: 'Credits updated successfully', user: updated });
     } else {

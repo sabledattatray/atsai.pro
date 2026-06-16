@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: 'Forbidden: Admin privilege required.' }, { status: 403 });
     }
 
-    const users = getAllUsers();
+    const users = await getAllUsers();
     return NextResponse.json(users);
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

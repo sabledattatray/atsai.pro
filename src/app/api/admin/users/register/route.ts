@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'UID and Email are required.' }, { status: 400 });
     }
 
-    const updated = upsertUser({ uid, email, displayName, providerId, emailVerified, createdAt, credits });
+    const updated = await upsertUser({ uid, email, displayName, providerId, emailVerified, createdAt, credits });
     return NextResponse.json({ success: true, message: 'User synchronized successfully', user: updated });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });

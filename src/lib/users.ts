@@ -1,7 +1,7 @@
-// users.ts — In-memory user store (for local dev)
-// TODO: Replace with Neon PostgreSQL + Prisma for production
-// On Vercel serverless, this map resets on every cold start.
-// For a persistent solution, use: https://neon.tech (free tier)
+// users.ts — Neon PostgreSQL-backed user store
+// All operations are async and go directly to Neon via the HTTP transport.
+
+import { getSQL } from '@/lib/db';
 
 export interface AppUser {
   uid: string;
@@ -13,89 +13,105 @@ export interface AppUser {
   credits: number;
 }
 
-// Default mock users for development
-const defaultUsers: AppUser[] = [
-  {
-    uid: "mock-uid-1",
-    email: "seeker@example.com",
-    displayName: "Datta Sable",
-    providerId: "password",
-    emailVerified: true,
-    createdAt: "2026-06-10T12:00:00Z",
-    credits: 999
-  },
-  {
-    uid: "mock-uid-2",
-    email: "sarah.connor@gmail.com",
-    displayName: "Sarah Connor",
-    providerId: "google.com",
-    emailVerified: true,
-    createdAt: "2026-06-12T08:30:00Z",
-    credits: 3
-  },
-  {
-    uid: "mock-uid-3",
-    email: "dev.john@github.com",
-    displayName: "John Developer",
-    providerId: "github.com",
-    emailVerified: false,
-    createdAt: "2026-06-14T14:45:00Z",
-    credits: 10
-  }
-];
-
-// In-memory store (persists within a single server instance lifecycle)
-const usersStore = new Map<string, AppUser>(
-  defaultUsers.map(u => [u.uid, u])
-);
-
-export function getAllUsers(): AppUser[] {
-  return Array.from(usersStore.values());
-}
-
-export function getUserByUid(uid: string): AppUser | undefined {
-  return usersStore.get(uid);
-}
-
-export function upsertUser(user: Partial<AppUser> & { uid: string; email: string }): AppUser {
-  const existing = usersStore.get(user.uid);
-  const updated: AppUser = {
-    uid: user.uid,
-    email: user.email,
-    displayName: user.displayName || existing?.displayName || 'Unnamed User',
-    providerId: user.providerId || existing?.providerId || 'password',
-    emailVerified: user.emailVerified !== undefined ? user.emailVerified : existing?.emailVerified ?? false,
-    createdAt: existing?.createdAt || user.createdAt || new Date().toISOString(),
-    credits: user.credits !== undefined ? user.credits : existing?.credits ?? 3,
+// -----------------------------------------------------------------
+// Internal row → AppUser mapper
+// -----------------------------------------------------------------
+function rowToUser(row: Record<string, unknown>): AppUser {
+  return {
+    uid: row.uid as string,
+    email: row.email as string,
+    displayName: (row.display_name as string) || 'Unnamed User',
+    providerId: (row.provider_id as string) || 'password',
+    emailVerified: Boolean(row.email_verified),
+    createdAt: row.created_at instanceof Date
+      ? row.created_at.toISOString()
+      : String(row.created_at),
+    credits: Number(row.credits ?? 3),
   };
-  usersStore.set(user.uid, updated);
-  return updated;
 }
 
-export function updateCredits(uid: string, credits: number): AppUser | null {
-  const user = usersStore.get(uid);
-  if (!user) return null;
-  const updated = { ...user, credits };
-  usersStore.set(uid, updated);
-  return updated;
+// -----------------------------------------------------------------
+// CRUD helpers
+// -----------------------------------------------------------------
+
+export async function getAllUsers(): Promise<AppUser[]> {
+  const sql = getSQL();
+  const rows = await sql`SELECT * FROM users ORDER BY created_at DESC`;
+  return rows.map(rowToUser);
 }
 
+export async function getUserByUid(uid: string): Promise<AppUser | undefined> {
+  const sql = getSQL();
+  const rows = await sql`SELECT * FROM users WHERE uid = ${uid} LIMIT 1`;
+  return rows[0] ? rowToUser(rows[0]) : undefined;
+}
+
+export async function upsertUser(
+  user: Partial<AppUser> & { uid: string; email: string }
+): Promise<AppUser> {
+  const sql = getSQL();
+  const rows = await sql`
+    INSERT INTO users (uid, email, display_name, provider_id, email_verified, created_at, credits)
+    VALUES (
+      ${user.uid},
+      ${user.email},
+      ${user.displayName || 'Unnamed User'},
+      ${user.providerId || 'password'},
+      ${user.emailVerified ?? false},
+      ${user.createdAt ? new Date(user.createdAt) : new Date()},
+      ${user.credits ?? 3}
+    )
+    ON CONFLICT (uid) DO UPDATE SET
+      email          = EXCLUDED.email,
+      display_name   = COALESCE(EXCLUDED.display_name, users.display_name),
+      provider_id    = COALESCE(EXCLUDED.provider_id, users.provider_id),
+      email_verified = EXCLUDED.email_verified,
+      credits        = CASE
+                         WHEN EXCLUDED.credits IS NOT NULL THEN EXCLUDED.credits
+                         ELSE users.credits
+                       END
+    RETURNING *
+  `;
+  return rowToUser(rows[0]);
+}
+
+export async function updateCredits(uid: string, credits: number): Promise<AppUser | null> {
+  const sql = getSQL();
+  const rows = await sql`
+    UPDATE users SET credits = ${credits} WHERE uid = ${uid} RETURNING *
+  `;
+  return rows[0] ? rowToUser(rows[0]) : null;
+}
+
+export async function decrementCredits(uid: string, amount = 1): Promise<AppUser | null> {
+  const sql = getSQL();
+  const rows = await sql`
+    UPDATE users
+    SET credits = GREATEST(0, credits - ${amount})
+    WHERE uid = ${uid}
+    RETURNING *
+  `;
+  return rows[0] ? rowToUser(rows[0]) : null;
+}
+
+// -----------------------------------------------------------------
 // Token verification helper (reusable across API routes)
+// -----------------------------------------------------------------
 export async function verifyToken(
   authHeader: string | null,
-  body: any = {}
+  body: Record<string, unknown> = {}
 ): Promise<{ uid: string; email: string } | null> {
   const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
-  const mockEmail = body?.email;
+  const mockEmail = body?.email as string | undefined;
 
   // Fallback: If Firebase is not configured or in local mock testing
   const isMockBypass =
     (!authHeader && mockEmail && process.env.NODE_ENV !== 'production') ||
-    (!apiKey || apiKey === '' || apiKey.startsWith('your_'));
+    (!apiKey || apiKey === '' || (apiKey as string).startsWith('your_'));
 
   if (isMockBypass) {
     return {
-      uid: body?.uid || 'mock-uid',
+      uid: (body?.uid as string) || 'mock-uid',
       email: String(mockEmail || 'seeker@example.com'),
     };
   }
@@ -117,7 +133,7 @@ export async function verifyToken(
 
     if (!response.ok) return null;
 
-    const data = (await response.json()) as any;
+    const data = (await response.json()) as { users?: { localId: string; email: string }[] };
     const user = data.users?.[0];
     if (!user) return null;
 
@@ -129,6 +145,8 @@ export async function verifyToken(
 }
 
 export function isAdmin(email: string): boolean {
-  const e = email.toLowerCase();
-  return e.includes('admin') || e === 'seeker@example.com';
+  const adminEmails = (process.env.ADMIN_EMAILS || 'seeker@example.com')
+    .split(',')
+    .map(e => e.trim().toLowerCase());
+  return adminEmails.includes(email.toLowerCase());
 }
