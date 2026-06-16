@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
-import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { Briefcase, FileText, User, LayoutDashboard, Menu, X, ChevronDown, Sparkles, Github, Linkedin, Twitter, Globe, Terminal, Cpu, Database, Activity, ArrowRight, Users } from 'lucide-react';
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { Briefcase, FileText, User, LayoutDashboard, Menu, X, ChevronDown, Sparkles, Globe, Terminal, Cpu, Database, Activity, ArrowRight, Users } from 'lucide-react';
 import { Button } from './ui/button';
 import { Logo } from './Logo';
 import { auth, onAuthStateChanged, signOut } from '@/lib/firebase';
-import { categorizedCoverLetters, slugify } from '../data/coverLetters';
+import { categorizedCoverLetters, slugify } from '@/data/coverLetters';
 
 const CoverLettersMenu = () => (
   <div className="relative group/cl h-full flex items-center">
@@ -12,7 +15,7 @@ const CoverLettersMenu = () => (
       Cover Letters <ChevronDown className="w-3.5 h-3.5 text-slate-500 group-hover/cl:rotate-180 transition-transform duration-300" />
     </div>
     
-    {/* Outer container to position the dropdown. No margin, uses padding-top to bridge hover region */}
+    {/* Outer container to position the dropdown */}
     <div className="absolute top-full left-1/2 -translate-x-1/2 w-[900px] pt-3 opacity-0 invisible group-hover/cl:opacity-100 group-hover/cl:visible transition-all duration-300 pointer-events-none group-hover/cl:pointer-events-auto z-50">
       {/* Inner visual box */}
       <div className="bg-[#070b14]/98 backdrop-blur-2xl border border-white/5 shadow-[0_30px_70px_rgba(0,0,0,0.8)] rounded-2xl p-6">
@@ -29,7 +32,7 @@ const CoverLettersMenu = () => (
                   {cat.items.slice(0, 3).map(item => (
                     <li key={item} className="group/item">
                       <Link 
-                        to={`/cover-letters/${slugify(item)}`} 
+                        href={`/cover-letters/${slugify(item)}`} 
                         className="flex items-center justify-between text-slate-400 hover:text-white p-1 rounded-md hover:bg-white/[0.02] -mx-1 transition-all duration-200"
                       >
                         <span className="text-[11px] font-medium truncate max-w-[150px]">{item}</span>
@@ -52,7 +55,6 @@ const CoverLettersMenu = () => (
           {/* Right Side: Featured Spotlight Box (4 cols) */}
           <div className="col-span-4 flex flex-col justify-between h-full space-y-4">
             <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 shadow-inner relative overflow-hidden group/box">
-              {/* Ambient subtle glow */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-indigo-500/10 rounded-full blur-xl pointer-events-none group-hover/box:bg-indigo-500/20 transition-all"></div>
               
               <div className="flex justify-between items-center mb-2.5">
@@ -80,7 +82,7 @@ const CoverLettersMenu = () => (
               </div>
             </div>
             
-            <Link to="/cover-letter-builder" className="w-full">
+            <Link href="/cover-letter-builder" className="w-full">
               <Button size="sm" className="w-full text-[9px] font-bold tracking-widest uppercase h-9 bg-indigo-600 hover:bg-indigo-500 text-white shadow-[0_0_15px_rgba(99,102,241,0.2)]">
                 Build Cover Letter
               </Button>
@@ -145,13 +147,10 @@ const ResumesMenu = () => (
       Resumes <ChevronDown className="w-3.5 h-3.5 text-slate-500 group-hover/res:rotate-180 transition-transform duration-300" />
     </div>
     
-    {/* Outer container to position the dropdown. No margin, uses padding-top to bridge hover region */}
     <div className="absolute top-full left-1/2 -translate-x-1/2 w-[900px] pt-3 opacity-0 invisible group-hover/res:opacity-100 group-hover/res:visible transition-all duration-300 pointer-events-none group-hover/res:pointer-events-auto z-50">
-      {/* Inner visual box */}
       <div className="bg-[#070b14]/98 backdrop-blur-2xl border border-white/5 shadow-[0_30px_70px_rgba(0,0,0,0.8)] rounded-2xl p-6">
         <div className="grid grid-cols-12 gap-8">
           
-          {/* Left Side: Template categories (8 cols) */}
           <div className="col-span-8 grid grid-cols-3 gap-6 pr-6 border-r border-white/5">
             {groupedResumes.slice(0, 3).map((cat, i) => (
               <div key={i} className="flex flex-col gap-2">
@@ -162,13 +161,13 @@ const ResumesMenu = () => (
                   {cat.items.map(item => (
                     <li key={item.name} className="group/item">
                       <Link 
-                        to={item.url} 
+                        href={item.url} 
                         className="flex flex-col justify-start text-slate-400 hover:text-white p-1.5 rounded-lg hover:bg-white/[0.02] -mx-1.5 border border-transparent hover:border-white/5 transition-all duration-200 text-left"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <span className="text-[11px] font-bold tracking-tight text-slate-200 group-hover/item:text-indigo-400 transition-colors">{item.name}</span>
                           {item.badge && (
-                            <span className={`px-1 py-0.2 rounded font-mono text-[5px] uppercase font-bold tracking-wider shrink-0 ${
+                            <span className={`px-1 rounded font-mono text-[5px] uppercase font-bold tracking-wider shrink-0 ${
                               item.badge === 'Most Used' 
                                 ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-sm' 
                                 : item.badge === 'Top Ranked' 
@@ -197,12 +196,12 @@ const ResumesMenu = () => (
                     {cat.items.slice(0, 2).map(item => (
                       <li key={item.name} className="group/item">
                         <Link 
-                          to={item.url} 
+                          href={item.url} 
                           className="flex items-center justify-between text-slate-400 hover:text-white p-1 rounded-md hover:bg-white/[0.01] -mx-1 transition-all duration-200 text-left"
                         >
                           <span className="text-[10px] font-bold tracking-tight text-slate-300 truncate">{item.name}</span>
                           {item.badge && (
-                            <span className="px-1 py-0.2 rounded font-mono text-[5px] uppercase font-bold tracking-wider shrink-0 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+                            <span className="px-1 rounded font-mono text-[5px] uppercase font-bold tracking-wider shrink-0 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
                               {item.badge}
                             </span>
                           )}
@@ -218,7 +217,6 @@ const ResumesMenu = () => (
           {/* Right Side: Pro Studio Card (4 cols) */}
           <div className="col-span-4 flex flex-col justify-between h-full space-y-4">
             <div className="p-4 rounded-xl bg-slate-900/40 border border-white/5 shadow-inner relative overflow-hidden group/box">
-              {/* Ambient subtle glow */}
               <div className="absolute top-0 right-0 w-24 h-24 bg-purple-500/10 rounded-full blur-xl pointer-events-none group-hover/box:bg-purple-500/20 transition-all"></div>
               
               <div className="flex justify-between items-center mb-2.5">
@@ -231,7 +229,6 @@ const ResumesMenu = () => (
                 Generate full-text achievements formatted with recruiter-vetted structures and real-time score auditing.
               </p>
               
-              {/* Visual Score Card */}
               <div className="bg-slate-950 p-2.5 rounded-lg border border-white/5 flex items-center justify-between font-mono text-[7px] text-slate-500 select-none">
                 <div>
                   <div className="text-slate-400 font-bold">ATS COMPATIBILITY</div>
@@ -243,7 +240,7 @@ const ResumesMenu = () => (
               </div>
             </div>
             
-            <Link to="/templates" className="w-full">
+            <Link href="/templates" className="w-full">
               <Button size="sm" className="w-full text-[9px] font-bold tracking-widest uppercase h-9 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.2)]">
                 Browse All Templates
               </Button>
@@ -256,10 +253,14 @@ const ResumesMenu = () => (
   </div>
 );
 
-export default function Layout() {
+interface LayoutProps {
+  children: React.ReactNode;
+}
+
+export default function Layout({ children }: LayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
+  const pathname = usePathname();
+  const router = useRouter();
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [user, setUser] = useState<any>(null);
@@ -297,7 +298,7 @@ export default function Layout() {
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (!auth) return;
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
@@ -317,7 +318,7 @@ export default function Layout() {
         console.error("Sign out error:", err);
       }
     }
-    navigate('/signin');
+    router.push('/sign-in');
   };
 
   const [consoleInput, setConsoleInput] = useState('');
@@ -336,9 +337,9 @@ export default function Layout() {
     if (cmd === '/help') {
       response = 'Commands: /status, /stack, /about, /ping, /clear';
     } else if (cmd === '/status') {
-      response = 'STATUS: Active | Build: stable-2.4.1 | API: operational';
+      response = 'STATUS: Active | Build: stable-2.5.0 | API: operational';
     } else if (cmd === '/stack') {
-      response = 'STACK: React, TypeScript, Tailwind v4, Google Gemini, Vite';
+      response = 'STACK: Next.js 15, TypeScript, Tailwind v4, Google Gemini';
     } else if (cmd === '/about') {
       response = 'DEV: Datta Sable (AI Architect & Full Stack Developer)';
     } else if (cmd === '/ping') {
@@ -355,41 +356,41 @@ export default function Layout() {
     setConsoleInput('');
   };
 
-  const publicRoutes = ['/', '/pricing', '/features', '/templates', '/cover-letter-builder', '/linkedin-optimizer', '/career-hub', '/interview-guides', '/about', '/privacy-policy', '/terms-of-service', '/signin'];
-  const isPublicRoute = publicRoutes.includes(location.pathname);
+  const publicRoutes = ['/', '/pricing', '/features', '/templates', '/cover-letter-builder', '/linkedin-optimizer', '/career-hub', '/interview-guides', '/about', '/privacy-policy', '/terms-of-service', '/sign-in', '/signin'];
+  const isPublicRoute = publicRoutes.includes(pathname) || (!pathname.startsWith('/app') && !pathname.startsWith('/editor') && !pathname.startsWith('/share'));
 
   return (
     <div className="min-h-screen flex flex-col bg-[#030712] font-sans text-slate-100">
       <header className="h-20 w-full flex items-center justify-center border-b border-white/5 bg-[#030712]/75 backdrop-blur-md sticky top-0 z-50 print:hidden relative px-4 md:px-12">
         <div className="container mx-auto h-full flex items-center justify-between">
-          <Link to="/" className="flex items-center text-white z-50">
+          <Link href="/" className="flex items-center text-white z-50">
             <Logo invertText={true} />
           </Link>
           
           <nav className="hidden lg:flex items-center gap-10 h-full text-xs font-bold text-slate-300 uppercase tracking-widest">
             {isPublicRoute ? (
               <>
-                <Link to="/features" className="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-500 after:transition-all">Features</Link>
-                <Link to="/pricing" className="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-500 after:transition-all">Pricing</Link>
+                <Link href="/features" className="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-500 after:transition-all">Features</Link>
+                <Link href="/pricing" className="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-500 after:transition-all">Pricing</Link>
                 <CoverLettersMenu />
                 <ResumesMenu />
                 <div className="h-4 w-px bg-white/10" />
-                <Link to="/signin" className="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-500 after:transition-all">Sign In</Link>
-                <Link to="/signup">
+                <Link href="/sign-in" className="hover:text-white transition-colors relative py-2 after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-0 hover:after:w-full after:bg-indigo-500 after:transition-all">Sign In</Link>
+                <Link href="/sign-up">
                   <Button className="font-bold tracking-widest uppercase text-[10px] px-6 h-10">Get Started</Button>
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/app?reset=true" className="hover:text-white transition-colors flex items-center gap-2">
+                <Link href="/app?reset=true" className="hover:text-white transition-colors flex items-center gap-2">
                   <LayoutDashboard className="w-4 h-4 text-indigo-400" /> Dashboard
                 </Link>
-                <Link to="/app/analyze" className="hover:text-white transition-colors flex items-center gap-2">
+                <Link href="/app?analyze=true" className="hover:text-white transition-colors flex items-center gap-2">
                   <FileText className="w-4 h-4 text-indigo-400" /> New Analysis
                 </Link>
                 <CoverLettersMenu />
                 <ResumesMenu />
-                <Link to="/career-hub" className="hover:text-white transition-colors flex items-center gap-1">
+                <Link href="/career-hub" className="hover:text-white transition-colors flex items-center gap-1">
                   <Sparkles className="w-3.5 h-3.5 text-indigo-400" /> Career Pathways
                 </Link>
                 <div className="h-4 w-px bg-white/10" />
@@ -405,10 +406,7 @@ export default function Layout() {
 
                   {isDropdownOpen && (
                     <>
-                      {/* Backdrop for click away */}
                       <div className="fixed inset-0 z-40" onClick={() => setIsDropdownOpen(false)} />
-                      
-                      {/* Dropdown Menu */}
                       <div className="absolute right-0 mt-2 w-56 bg-[#070b14]/98 border border-white/10 rounded-xl shadow-2xl p-4 z-50 text-left normal-case tracking-normal backdrop-blur-xl">
                         <div className="mb-3 border-b border-white/5 pb-2.5">
                           <p className="text-xs font-bold text-white truncate">{user?.displayName || 'Guest User'}</p>
@@ -417,14 +415,14 @@ export default function Layout() {
                         
                         <div className="space-y-1">
                           <Link 
-                            to="/app?reset=true" 
+                            href="/app?reset=true" 
                             onClick={() => setIsDropdownOpen(false)}
                             className="flex items-center gap-2 text-xs text-slate-300 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all font-semibold"
                           >
                             <LayoutDashboard className="w-3.5 h-3.5 text-indigo-400" /> Dashboard
                           </Link>
                           <Link 
-                            to="/app?tab=settings" 
+                            href="/app?tab=settings" 
                             onClick={() => setIsDropdownOpen(false)}
                             className="flex items-center gap-2 text-xs text-slate-300 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all font-semibold"
                           >
@@ -432,7 +430,7 @@ export default function Layout() {
                           </Link>
                           {isAdmin && (
                             <Link 
-                              to="/app?tab=admin" 
+                              href="/app?tab=admin" 
                               onClick={() => setIsDropdownOpen(false)}
                               className="flex items-center gap-2 text-xs text-slate-300 hover:text-white px-2 py-1.5 rounded-lg hover:bg-white/5 transition-all font-semibold"
                             >
@@ -469,38 +467,38 @@ export default function Layout() {
           <nav className="flex flex-col gap-6 text-xl font-extrabold text-white uppercase tracking-tight">
             {isPublicRoute ? (
               <>
-                <Link to="/" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Home</Link>
-                <Link to="/features" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Features</Link>
-                <Link to="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Pricing</Link>
+                <Link href="/" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Home</Link>
+                <Link href="/features" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Features</Link>
+                <Link href="/pricing" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Pricing</Link>
                 <a href="/#cover-letters" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Cover Letters</a>
-                <Link to="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Resumes</Link>
-                <Link to="/signin" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Sign In</Link>
-                <Link to="/signup" onClick={() => setIsMobileMenuOpen(false)} className="mt-4">
+                <Link href="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Resumes</Link>
+                <Link href="/sign-in" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4">Sign In</Link>
+                <Link href="/sign-up" onClick={() => setIsMobileMenuOpen(false)} className="mt-4">
                   <Button size="lg" className="w-full text-xs tracking-wider">GET STARTED FREE</Button>
                 </Link>
               </>
             ) : (
               <>
-                <Link to="/app?reset=true" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                <Link href="/app?reset=true" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   <LayoutDashboard className="w-6 h-6 text-indigo-400" /> Dashboard
                 </Link>
-                <Link to="/app/analyze" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                <Link href="/app?analyze=true" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   <FileText className="w-6 h-6 text-indigo-400" /> New Analysis
                 </Link>
                 <a href="/#cover-letters" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   Cover Letters
                 </a>
-                <Link to="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                <Link href="/templates" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   Resumes
                 </Link>
-                <Link to="/career-hub" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                <Link href="/career-hub" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   Career Pathways
                 </Link>
-                <Link to="/app?tab=settings" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                <Link href="/app?tab=settings" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                   <User className="w-6 h-6 text-indigo-400" /> Account Settings
                 </Link>
                 {isAdmin && (
-                  <Link to="/app?tab=admin" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
+                  <Link href="/app?tab=admin" onClick={() => setIsMobileMenuOpen(false)} className="border-b border-white/5 pb-4 flex items-center gap-3">
                     <Users className="w-6 h-6 text-indigo-400" /> Admin Portal
                   </Link>
                 )}
@@ -517,18 +515,17 @@ export default function Layout() {
       )}
 
       <main className="flex-1 w-full flex flex-col bg-[#030712]">
-        <Outlet />
+        {children}
       </main>
       
-      {isPublicRoute && location.pathname !== '/signin' && (
+      {isPublicRoute && pathname !== '/sign-in' && pathname !== '/signin' && (
         <footer className="relative bg-slate-950 border-t border-white/5 pt-20 pb-12 px-6 md:px-12 text-[10px] font-bold uppercase tracking-widest text-slate-400 overflow-hidden">
-          {/* Subtle Background Glow behind footer */}
           <div className="absolute -bottom-1/2 left-1/3 w-[500px] h-[500px] bg-indigo-500/5 rounded-full blur-[100px] pointer-events-none -z-10"></div>
           
           <div className="container mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 relative z-10 mb-16">
             {/* Column 1: Brand & Architect Bio (4 cols) */}
             <div className="lg:col-span-4 space-y-6">
-              <Link to="/" className="inline-block">
+              <Link href="/" className="inline-block">
                 <Logo invertText={true} />
               </Link>
               <p className="text-xs leading-relaxed max-w-sm text-slate-400 normal-case tracking-normal font-medium">
@@ -552,13 +549,13 @@ export default function Layout() {
                 {/* Social icons */}
                 <div className="flex gap-3 mt-3">
                   <a href="https://github.com/dattasable" target="_blank" rel="noreferrer" className="w-7 h-7 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-white transition-all border border-white/5" title="GitHub">
-                    <Github className="w-3.5 h-3.5" />
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path fillRule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.34-3.369-1.34-.454-1.156-1.11-1.464-1.11-1.464-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.743 0 .267.18.579.688.481C19.137 20.162 22 16.418 22 12c0-5.523-4.477-10-10-10z" clipRule="evenodd" /></svg>
                   </a>
                   <a href="https://linkedin.com/in/dattasable" target="_blank" rel="noreferrer" className="w-7 h-7 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-indigo-400 transition-all border border-white/5" title="LinkedIn">
-                    <Linkedin className="w-3.5 h-3.5" />
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z"/><circle cx="4" cy="4" r="2"/></svg>
                   </a>
                   <a href="https://twitter.com/dattasable" target="_blank" rel="noreferrer" className="w-7 h-7 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-sky-400 transition-all border border-white/5" title="Twitter">
-                    <Twitter className="w-3.5 h-3.5" />
+                    <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="currentColor"><path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/></svg>
                   </a>
                   <a href="https://dattasable.com" target="_blank" rel="noreferrer" className="w-7 h-7 rounded bg-white/5 hover:bg-white/10 flex items-center justify-center text-slate-400 hover:text-emerald-400 transition-all border border-white/5" title="Portfolio">
                     <Globe className="w-3.5 h-3.5" />
@@ -573,10 +570,10 @@ export default function Layout() {
                 <Cpu className="w-3.5 h-3.5 text-indigo-400" /> Platform
               </h4>
               <ul className="space-y-2.5 text-slate-400">
-                <li><Link to="/features" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Feature Tour</Link></li>
-                <li><Link to="/app" className="hover:text-white transition-colors normal-case tracking-normal font-medium">ATS Resume Checker</Link></li>
-                <li><Link to="/cover-letter-builder" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Cover Letter Builder</Link></li>
-                <li><Link to="/linkedin-optimizer" className="hover:text-white transition-colors normal-case tracking-normal font-medium">LinkedIn Optimizer</Link></li>
+                <li><Link href="/features" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Feature Tour</Link></li>
+                <li><Link href="/app" className="hover:text-white transition-colors normal-case tracking-normal font-medium">ATS Resume Checker</Link></li>
+                <li><Link href="/cover-letter-builder" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Cover Letter Builder</Link></li>
+                <li><Link href="/linkedin-optimizer" className="hover:text-white transition-colors normal-case tracking-normal font-medium">LinkedIn Optimizer</Link></li>
               </ul>
             </div>
 
@@ -586,10 +583,10 @@ export default function Layout() {
                 <Database className="w-3.5 h-3.5 text-indigo-400" /> Resources
               </h4>
               <ul className="space-y-2.5 text-slate-400">
-                <li><Link to="/templates" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Resume Templates</Link></li>
-                <li><Link to="/career-hub" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Career Hub</Link></li>
-                <li><Link to="/interview-guides" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Interview Guides</Link></li>
-                <li><Link to="/privacy-policy" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Privacy Protocol</Link></li>
+                <li><Link href="/templates" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Resume Templates</Link></li>
+                <li><Link href="/career-hub" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Career Hub</Link></li>
+                <li><Link href="/interview-guides" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Interview Guides</Link></li>
+                <li><Link href="/privacy-policy" className="hover:text-white transition-colors normal-case tracking-normal font-medium">Privacy Protocol</Link></li>
               </ul>
             </div>
 
@@ -645,11 +642,11 @@ export default function Layout() {
                 Telemetry: <span className="text-emerald-400 font-bold">100% operational</span>
               </span>
               <span>Node Latency: <span className="text-slate-400 font-mono">14ms (NY-Edge)</span></span>
-              <span>Stack: <span className="text-slate-400">React 18 / Vite 6</span></span>
+              <span>Stack: <span className="text-slate-400">Next.js 15 / React 19</span></span>
             </div>
             
             <div className="flex items-center gap-6 flex-wrap justify-center md:justify-end">
-              <Link to="/terms-of-service" className="hover:text-slate-300 transition-colors normal-case tracking-normal">Terms of Service</Link>
+              <Link href="/terms-of-service" className="hover:text-slate-300 transition-colors normal-case tracking-normal">Terms of Service</Link>
               <span>&copy; {new Date().getFullYear()} Resume Copilot AI. All Rights Reserved.</span>
             </div>
           </div>

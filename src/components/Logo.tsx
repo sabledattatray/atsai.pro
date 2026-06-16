@@ -68,7 +68,7 @@ export function Logo({ className = "", showText = true, invertText = false }: { 
           <span className="font-extrabold text-lg tracking-tight bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
             Copilot
           </span>
-          <span className="px-1.5 py-0.2 border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[7px] uppercase font-bold tracking-widest rounded-md font-mono relative -top-0.5">
+          <span className="px-1.5 border border-indigo-500/30 bg-indigo-500/10 text-indigo-400 text-[7px] uppercase font-bold tracking-widest rounded-md font-mono relative -top-0.5">
             AI
           </span>
         </div>
