@@ -31,8 +31,17 @@ Required JSON format:
   "skills": "String (Comma separated list of skills)"
 }`;
 
+import { verifyToken, getUserByUid, decrementCredits, upsertUser, isAdmin } from '@/lib/users';
+import { rateLimit } from '@/lib/rateLimit';
+
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 20 generate-resume calls per minute per IP
+    const { limited } = rateLimit(req, { limit: 20, windowMs: 60_000, identifier: 'generate-resume' });
+    if (limited) {
+      return NextResponse.json({ error: 'Too many requests. Please wait a moment before trying again.' }, { status: 429 });
+    }
+
     let aiClient;
     try {
       aiClient = getAi();
@@ -40,8 +49,36 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Gemini API key is not configured.' }, { status: 500 });
     }
 
-    const { prompt } = await req.json();
+    const body = await req.json();
+    const { prompt } = body;
     if (!prompt) return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+
+    const authHeader = req.headers.get('authorization');
+    const sessionUser = await verifyToken(authHeader, body);
+
+    if (!sessionUser) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid or missing session token.' }, { status: 401 });
+    }
+
+    // Load or register the user profile in PostgreSQL
+    let user = await getUserByUid(sessionUser.uid);
+    if (!user) {
+      user = await upsertUser({
+        uid: sessionUser.uid,
+        email: sessionUser.email,
+        displayName: sessionUser.email.split('@')[0] || 'User',
+        providerId: 'password',
+        emailVerified: false,
+        credits: 3 // Default signup credits
+      });
+    }
+
+    // Check credit limits (admins have unlimited credits)
+    const isAdminUser = isAdmin(sessionUser.email);
+    
+    if (user.credits <= 0 && !isAdminUser) {
+      return NextResponse.json({ error: 'Insufficient credits. Please upgrade your plan to generate resumes.' }, { status: 402 });
+    }
 
     const promptText = GENERATE_PROMPT.replace('{PROMPT}', prompt);
 
@@ -66,7 +103,18 @@ export async function POST(req: NextRequest) {
 
     const cleanJsonStr = responseText.replace(/```json/gi, '').replace(/```/g, '').trim();
     const result = JSON.parse(cleanJsonStr);
-    return NextResponse.json(result);
+
+    // Decrement credits if not admin bypass
+    let updatedUser = user;
+    if (!isAdminUser) {
+      const decResult = await decrementCredits(sessionUser.uid);
+      if (decResult) updatedUser = decResult;
+    }
+
+    return NextResponse.json({
+      ...result,
+      remainingCredits: updatedUser.credits
+    });
   } catch (error: any) {
     console.error('Error generating resume:', error);
     return NextResponse.json({ error: 'Failed to generate resume from AI.' }, { status: 500 });

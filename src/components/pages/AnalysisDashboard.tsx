@@ -63,6 +63,30 @@ export default function AnalysisDashboard() {
   }, []);
 
   useEffect(() => {
+    async function fetchProfile() {
+      if (!user) return;
+      try {
+        const token = await user.getIdToken();
+        const res = await fetch('/api/user/profile', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (res.ok) {
+          const profile = await res.json();
+          if (profile && typeof profile.credits === 'number') {
+            setCredits(profile.credits);
+            localStorage.setItem('atsCredits', profile.credits.toString());
+          }
+        }
+      } catch (err) {
+        console.error("Failed to fetch user profile:", err);
+      }
+    }
+    fetchProfile();
+  }, [user]);
+
+  useEffect(() => {
     const searchParams = searchParamsHook;
     const tab = searchParamsHook.get('tab');
     if (tab === 'settings') {
@@ -238,11 +262,12 @@ export default function AnalysisDashboard() {
   const handleAnalyze = async () => {
     if (files.length === 0 || !jobDescription) return;
 
-    // Admin Bypass for scan limits
-    // if (credits < files.length) {
-    //    setShowPaywall(true);
-    //    return;
-    //  }
+    // Enforce credit checking on client side (except if they are admin)
+    const isAdminUser = user?.email?.toLowerCase().includes('admin') || user?.email === 'seeker@example.com' || user?.email === 'sabledattatray@gmail.com';
+    if (credits < files.length && !isAdminUser) {
+      setShowPaywall(true);
+      return;
+    }
 
     setStatus('UPLOADING');
     setErrorMsg(null);
@@ -255,10 +280,16 @@ export default function AnalysisDashboard() {
     
     try {
       const allResults = [];
-      // Admin Bypass: Deduct credits commented out
-      // const newCredits = credits - files.length;
-      // setCredits(newCredits);
-      // localStorage.setItem('atsCredits', newCredits.toString());
+
+      // Retrieve user token for server authorization
+      let idToken = '';
+      if (user && typeof user.getIdToken === 'function') {
+        try {
+          idToken = await user.getIdToken();
+        } catch (e) {
+          console.error("Error getting user ID token:", e);
+        }
+      }
 
       // Loop through files sequentially to save API rate limits and build comparison
       for (let i = 0; i < files.length; i++) {
@@ -273,7 +304,16 @@ export default function AnalysisDashboard() {
         formData.append('resume', f);
         formData.append('jobDescription', jobDescription);
 
-        const response = await fetch('/api/analyze', { method: 'POST', body: formData });
+        const headers: Record<string, string> = {};
+        if (idToken) {
+          headers['Authorization'] = `Bearer ${idToken}`;
+        }
+
+        const response = await fetch('/api/analyze', { 
+          method: 'POST', 
+          headers,
+          body: formData 
+        });
         let data;
         const text = await response.text();
         if (!response.ok && text.trim().startsWith('<')) {
@@ -292,6 +332,12 @@ export default function AnalysisDashboard() {
         if (response.ok && !data.error) {
             data.fileName = f.name;
             allResults.push(data);
+            
+            // Sync updated credits returned by the server
+            if (typeof data.remainingCredits === 'number') {
+              setCredits(data.remainingCredits);
+              localStorage.setItem('atsCredits', data.remainingCredits.toString());
+            }
         } else {
             throw new Error(data.error || 'Failed to analyze: received unexpected response format.');
         }

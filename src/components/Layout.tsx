@@ -339,7 +339,7 @@ export default function Layout({ children }: LayoutProps) {
     } else if (cmd === '/status') {
       response = 'STATUS: Active | Build: stable-2.5.0 | API: operational';
     } else if (cmd === '/stack') {
-      response = 'STACK: Next.js 15, TypeScript, Tailwind v4, Google Gemini';
+      response = 'STACK: Next.js 16, TypeScript, Tailwind v4, Google Gemini';
     } else if (cmd === '/about') {
       response = 'DEV: Datta Sable (AI Architect & Full Stack Developer)';
     } else if (cmd === '/ping') {
@@ -642,7 +642,7 @@ export default function Layout({ children }: LayoutProps) {
                 Telemetry: <span className="text-emerald-400 font-bold">100% operational</span>
               </span>
               <span>Node Latency: <span className="text-slate-400 font-mono">14ms (NY-Edge)</span></span>
-              <span>Stack: <span className="text-slate-400">Next.js 15 / React 19</span></span>
+              <span>Stack: <span className="text-slate-400">Next.js 16 / React 19</span></span>
             </div>
             
             <div className="flex items-center gap-6 flex-wrap justify-center md:justify-end">

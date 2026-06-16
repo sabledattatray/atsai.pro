@@ -83,6 +83,12 @@ export async function updateCredits(uid: string, credits: number): Promise<AppUs
   return rows[0] ? rowToUser(rows[0]) : null;
 }
 
+export async function getUserByEmail(email: string): Promise<AppUser | undefined> {
+  const sql = getSQL();
+  const rows = await sql`SELECT * FROM users WHERE email = ${email.toLowerCase()} LIMIT 1`;
+  return rows[0] ? rowToUser(rows[0]) : undefined;
+}
+
 export async function decrementCredits(uid: string, amount = 1): Promise<AppUser | null> {
   const sql = getSQL();
   const rows = await sql`

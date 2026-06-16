@@ -83,13 +83,49 @@ Output strictly in the following JSON format:
   "bulletRewrites": [{ "original": String, "suggested": String }]
 }`;
 
+import { verifyToken, getUserByUid, decrementCredits, upsertUser, isAdmin } from '@/lib/users';
+import { rateLimit } from '@/lib/rateLimit';
+
 export async function POST(req: NextRequest) {
   try {
+    // Rate limit: 10 AI analyze calls per minute per IP
+    const { limited } = rateLimit(req, { limit: 10, windowMs: 60_000, identifier: 'analyze' });
+    if (limited) {
+      return NextResponse.json({ error: 'Too many requests. Please wait a moment before trying again.' }, { status: 429 });
+    }
+
     let aiClient;
     try {
       aiClient = getAi();
     } catch {
       return NextResponse.json({ error: 'Gemini API key is not configured. Please add GEMINI_API_KEY to your environment.' }, { status: 500 });
+    }
+
+    const authHeader = req.headers.get('authorization');
+    const sessionUser = await verifyToken(authHeader);
+
+    if (!sessionUser) {
+      return NextResponse.json({ error: 'Unauthorized: Invalid or missing session token.' }, { status: 401 });
+    }
+
+    // Load or register the user profile in PostgreSQL
+    let user = await getUserByUid(sessionUser.uid);
+    if (!user) {
+      user = await upsertUser({
+        uid: sessionUser.uid,
+        email: sessionUser.email,
+        displayName: sessionUser.email.split('@')[0] || 'User',
+        providerId: 'password',
+        emailVerified: false,
+        credits: 3 // Default signup credits
+      });
+    }
+
+    // Check credit limits (admins have unlimited credits)
+    const isAdminUser = isAdmin(sessionUser.email);
+    
+    if (user.credits <= 0 && !isAdminUser) {
+      return NextResponse.json({ error: 'Insufficient credits. Please upgrade your plan to run more scans.' }, { status: 402 });
     }
 
     const formData = await req.formData();
@@ -143,7 +179,18 @@ export async function POST(req: NextRequest) {
       result = JSON.parse(cleanJsonStr);
     }
 
-    return NextResponse.json(result);
+    // Decrement credits if not admin bypass
+    let updatedUser = user;
+    if (!isAdminUser) {
+      const decResult = await decrementCredits(sessionUser.uid);
+      if (decResult) updatedUser = decResult;
+    }
+
+    // Attach current credit count to response
+    return NextResponse.json({
+      ...result,
+      remainingCredits: updatedUser.credits
+    });
   } catch (error: any) {
     console.error('Error analyzing resume:', error);
     let errMsg = 'An error occurred during analysis.';
